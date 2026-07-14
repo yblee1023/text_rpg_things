@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>창귀록 倀鬼錄</title>
@@ -69,6 +72,8 @@ button.gold:hover{border-color:var(--lamp)}
 @media(max-width:520px){body{font-size:16px}#wrap{padding:20px 16px 60px}h1{font-size:19px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+</head>
+<body>
 
 <canvas id="stars"></canvas>
 <div id="bleed"></div>
@@ -84,12 +89,61 @@ button.gold:hover{border-color:var(--lamp)}
     <div id="tier"></div>
   </div>
   <main id="main"></main>
+  <div id="nojs" style="padding:30px 0;color:#D9614F;line-height:2">
+    <b>스크립트가 실행되지 않았다.</b><br>
+    <span style="color:#8F94A6;font-size:15px">
+      아이폰에서 파일을 눌러 여는 <b>미리보기 화면</b>은 자바스크립트를 실행하지 않는다.<br>
+      웹에 올려서 <b>Safari 주소창으로 접속</b>하면 정상 작동한다.
+    </span>
+  </div>
   <div id="acts"></div>
   <div id="clues"></div>
+  <button id="reset" style="margin-top:16px;align-self:flex-start;border-color:#212a40;padding:7px 12px;font-size:12px;font-family:'Gothic A1',sans-serif;letter-spacing:.14em;color:#5C6379">처음부터</button>
 </div>
 
 <script>
-const S={day:1,acts:2,mu:30,buja:3,clues:new Set(),freed:new Set(),done:new Set(),lost:new Set(),names:new Set(),saw:new Set()};
+(function(){var n=document.getElementById('nojs');if(n)n.remove();})();
+window.onerror=function(msg,src,line){
+  var m=document.getElementById('main');
+  if(m)m.innerHTML='<div class="p bad">오류가 났다 — '+msg+' (줄 '+line+')</div>';
+  return false;
+};
+const S={day:1,acts:2,mu:30,buja:3,over:false,clues:new Set(),freed:new Set(),done:new Set(),lost:new Set(),names:new Set(),saw:new Set()};
+
+/* ── 저장 ── */
+const KEY='changgwirok.save.v1';
+let CANSAVE=true;
+try{localStorage.setItem('__t','1');localStorage.removeItem('__t');}catch(e){CANSAVE=false;}
+function save(at){
+  if(!CANSAVE)return;
+  try{localStorage.setItem(KEY,JSON.stringify({at,day:S.day,acts:S.acts,mu:S.mu,buja:S.buja,
+    clues:[...S.clues],freed:[...S.freed],done:[...S.done],lost:[...S.lost]}));}catch(e){}
+}
+function loadSave(){
+  if(!CANSAVE)return null;
+  try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null;}catch(e){return null;}
+}
+function wipe(){if(CANSAVE){try{localStorage.removeItem(KEY);}catch(e){}}}
+function restore(d){
+  S.day=d.day;S.acts=d.acts;S.mu=d.mu;S.buja=d.buja;
+  S.clues=new Set(d.clues);S.freed=new Set(d.freed);S.done=new Set(d.done);S.lost=new Set(d.lost);S.over=false;
+  if(d.at==='night')night();else day();
+}
+function burnout(){
+  final('창귀 倀鬼',[
+    [null,'무병이 넘쳤다. 받지 않은 신이 몸 안에서 터졌다.'],
+    [null,'나는 눈밭 위를 걷고 있다. 발자국이 남지 않는다.'],
+    [null,'저 앞에 사람이 온다. 나는 그의 이름을 안다. 부르면 그가 올 것이다.'],
+    ['said','“...나리.”'],
+    ['sp','부르지 않으려 했다. 그런데 입이 저절로 열렸다. 나는 이제 창귀다.']
+  ]);
+}
+function reset(){
+  wipe();
+  S.day=1;S.acts=2;S.mu=30;S.buja=3;S.over=false;
+  S.clues=new Set();S.freed=new Set();S.done=new Set();S.lost=new Set();
+  intro();
+}
 
 const CLUE={
   jeung:'제웅과 사주 한 장',
@@ -130,6 +184,7 @@ function paint(){
 
 let queue=[];
 function show(nodes,choices){
+  if(S.mu>=100&&!S.over){S.over=true;return burnout();}
   const m=E('main');m.innerHTML='';E('acts').innerHTML='';
   nodes.forEach((n,i)=>{
     const d=document.createElement('div');
@@ -183,6 +238,7 @@ function introB(saw){
 /* ── 낮 ── */
 function day(){
   if(S.acts<=0){night();return;}
+  save('day');
   const c=[];
   const A=(id,k,t,fn,cls)=>{
     if(S.done.has(id)||S.lost.has(id))return;
@@ -390,34 +446,25 @@ function dokkaebi(){
 function night(){
   const g=S.day;
   if(g>=4){finale();return;}
-  const [rank,who]=GHOST[g];
-  const need=NAMEOF[g];
+  save('night');
+  const left=[1,2,3].filter(k=>!S.freed.has(k));
   const c=[];
   if(S.buja>0)c.push({k:'부적',t:'부적을 태운다. 오늘 밤은 아무것도 보이지 않는다. (무병 −15)',f:()=>{S.buja--;mu(-15);dawn();}});
   c.push({k:'마주본다',t:'눈을 뜬다. (무병 +18)',cls:'warn',f:()=>{
     mu(18);
     const n=[['hd',`${S.day}일차 — 밤`],
-      [null,`${who}가 눈 위에 서 있다. 발자국이 없다.`],
+      [null,`눈 위에 ${left.length===1?'하나가':left.length+'이'} 서 있다. 발자국이 없다.`],
       ['said','“...나리. 제 이름을 아십니까.”'],
-      ['said','“저는 제 이름을 잃었습니다. 누가 저를 대신 살렸는지 알아야 놓여납니다. 그자의 이름을 주십시오.”'],
-      ['sp',`창귀 ${rank}. 이름을 주면 풀려나고, 못 주면 — 나를 데려간다.`]];
+      ['said','“누가 저를 대신 살렸는지 알아야 놓여납니다. 그자의 이름을 주십시오.”'],
+      ['sp',left.map(k=>`창귀 ${GHOST[k][0]} — ${GHOST[k][1]}`).join('<br>')]];
     const ch=[];
-    if(has(need)&&!S.freed.has(g)){
-      ch.push({k:'이름을 준다',t:`“${BENE[g]}. 그자가 너 대신 살았다.”`,f:()=>{
-        S.freed.add(g);
-        show([['hd','해방'],
-          [null,`${who}가 오래도록 서 있었다. 그리고 고개를 숙였다.`],
-          ['said','“...아. 그렇습니까.”'],
-          [null,'눈 위의 그림자가 옅어진다. 산군의 서열 하나가 비었다. 오늘 밤 도성에서 아무도 불려나가지 않는다.'],
-          ['got',`창귀 ${rank} 해방`],
-          ['sp','수사가 사람을 살렸다. 처음이다.']
-        ],[{k:'날이 샌다',t:'돌아선다.',f:dawn}]);
-      }});
-    }
+    left.forEach(k=>{
+      if(has(NAMEOF[k]))ch.push({k:'이름을 준다',t:`${GHOST[k][1]}에게 — “${BENE[k]}. 그자가 너 대신 살았다.”`,f:()=>free(k,dawn)});
+    });
     ch.push({k:'모른다',t:'“아직 모른다.”',cls:'warn',f:()=>{
       mu(8);
       show([['hd','밤'],
-        [null,'그가 웃었다. 웃는 것 같았다.'],
+        [null,'그들이 웃었다. 웃는 것 같았다.'],
         ['said','“그럼 나리가 대신 가시겠습니까.”'],
         [null,'뒤에서 뜨거운 숨이 닿는다. 돌아보지 않았다. 돌아보면 끝이다.'],
         ['sp','겨우 살았다. 그러나 오늘 밤, 도성에서 또 하나가 사라졌다.']
@@ -430,6 +477,16 @@ function night(){
     ['sp','눈을 뜨면 보인다. 보면 앓는다. 안 보면 아무것도 얻지 못한다.']
   ],c);
 }
+function free(k,then){
+  S.freed.add(k);
+  show([['hd','해방'],
+    [null,`${GHOST[k][1]}가 오래도록 서 있었다. 그리고 고개를 숙였다.`],
+    ['said','“...아. 그렇습니까.”'],
+    [null,'눈 위의 그림자가 옅어진다. 산군의 서열 하나가 비었다. 오늘 밤 도성에서 아무도 불려나가지 않는다.'],
+    ['got',`창귀 ${GHOST[k][0]} 해방 — ${S.freed.size}/3`],
+    ['sp','수사가 사람을 살렸다.']
+  ],[{k:'계속',t:'돌아선다.',f:then||dawn}]);
+}
 function dawn(){S.day++;S.acts=2;if(S.day>4){finale();return;}day();}
 
 /* ── 종막 ── */
@@ -439,10 +496,11 @@ function finale(){
     [null,'북소리 사이로 발소리가 섞인다. 앞발이 뒷발보다 큰 발소리.'],
     ['sp','산군이 왔다. 그리고 삼차사가 왔다. 명부가 어긋난 도성으로.']];
   const c=[];
-  if(has('jangbu')&&!S.freed.has(3)){
-    n.push([null,'육혼이 아직 눈 위에 서 있다. 마지막 기회다.']);
-    c.push({k:'이름을 준다',t:`육혼에게 — “${BENE[3]}.”`,f:()=>{S.freed.add(3);mu(18);finale();}});
-  }
+  [1,2,3].forEach(k=>{
+    if(!S.freed.has(k)&&has(NAMEOF[k])){
+      c.push({k:'이름을 준다',t:`${GHOST[k][1]}에게 — “${BENE[k]}.”`,f:()=>free(k,finale)});
+    }
+  });
   n.push([null,'이제 이름을 대야 한다. 누가 이 여섯을 골랐는가.']);
   const accuse=(who)=>{
     if(who==='pansa'&&(has('chingching')||(has('jangbu')&&has('ilji')))) return end('right');
@@ -509,31 +567,57 @@ function end(kind){
 }
 
 function final(title,body){
+  wipe();
   const stat=`무병 ${S.mu} · 해방한 창귀 ${S.freed.size}/3 · 단서 ${S.clues.size}/7 · 잃은 문 ${S.lost.size}`;
   show([['hd','종막 — '+title],...body,
     ['sp','———'],
     ['got',stat]
-  ],[{k:'다시',t:'처음부터 다시 한다.',f:()=>{
-    S.day=1;S.acts=2;S.mu=30;S.buja=3;
-    S.clues=new Set();S.freed=new Set();S.done=new Set();S.lost=new Set();
-    intro();
-  }}]);
+  ],[{k:'다시',t:'처음부터 다시 한다.',f:reset}]);
 }
 
-/* 별 */
-(function(){
-  const cv=E('stars'),x=cv.getContext('2d');
-  function r(){
-    cv.width=innerWidth;cv.height=innerHeight;
-    x.clearRect(0,0,cv.width,cv.height);
-    for(let i=0;i<110;i++){
-      const a=Math.random()*.6+.08;
-      x.fillStyle=`rgba(231,225,210,${a})`;
-      x.fillRect(Math.random()*cv.width,Math.random()*cv.height,Math.random()<.15?1.6:1,Math.random()<.15?1.6:1);
-    }
+/* ── 표지 ── */
+function boot(){
+  const d=loadSave();
+  const c=[];
+  if(d){
+    const where=d.at==='night'?`${d.day}일차 밤`:(d.day<4?`${d.day}일차 낮`:'그믐');
+    c.push({k:'이어하기',t:`${where} — 무병 ${d.mu} · 단서 ${d.clues.length}개`,f:()=>restore(d)});
   }
-  r();addEventListener('resize',r);
-})();
+  c.push({k:'처음부터',t:'서장부터 시작한다.',f:reset});
+  const n=[
+    ['hd','창귀록 倀鬼錄'],
+    [null,'짚으로 엮은 사람이 눈밭에 누워 있다. 어제 이 자리에서 물지게꾼 하나가 사라졌다.'],
+    ['sp','호랑이에게 잡아먹힌 자는 창귀가 된다. 창귀는 다음 사람을 데려와야만 놓여난다.<br>놓여나는 길은 하나뿐 — <b>자기 대신 살아남은 자의 이름</b>을 듣는 것.'],
+    [null,'나흘이다. 그믐 나례 전에 이름을 찾아라.']
+  ];
+  if(!CANSAVE)n.push(['bad','이 화면에서는 진행이 저장되지 않는다 — HTML 파일을 직접 열면 저장된다']);
+  show(n,c);
+}
 
-intro();
+/* 게임을 먼저 띄운다. 장식은 그 다음이다. */
+try{
+  E('reset').onclick=()=>{if(confirm('진행한 것을 모두 버리고 처음부터 시작합니다.'))reset();};
+}catch(e){}
+
+boot();
+
+/* 별 — 실패해도 게임은 굴러가야 한다 */
+try{
+  const cv=E('stars'),x=cv.getContext('2d');
+  if(x){
+    const r=()=>{
+      cv.width=innerWidth;cv.height=innerHeight;
+      x.clearRect(0,0,cv.width,cv.height);
+      for(let i=0;i<110;i++){
+        const a=Math.random()*.6+.08;
+        x.fillStyle=`rgba(231,225,210,${a})`;
+        const s=Math.random()<.15?1.6:1;
+        x.fillRect(Math.random()*cv.width,Math.random()*cv.height,s,s);
+      }
+    };
+    r();addEventListener('resize',r);
+  }
+}catch(e){}
 </script>
+</body>
+</html>
