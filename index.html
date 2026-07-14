@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>창귀록 倀鬼錄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Song+Myung&family=Nanum+Myeongjo:wght@400;700&family=Gothic+A1:wght@300;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0F1626; --night2:#182034; --line:#2C3651;
+  --paper:#E7E1D2; --dim:#8F94A6; --dimmer:#5C6379;
+  --ju:#B0392C; --ju-lit:#D9614F;
+  --ok:#6E9E92; --lamp:#C9A03C;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--night); color:var(--paper);
+  font-family:'Nanum Myeongjo',serif; font-size:17px; line-height:1.95;
+  display:flex; justify-content:center; min-height:100%;
+  -webkit-font-smoothing:antialiased;
+}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5}
+#bleed{
+  position:fixed;inset:0;pointer-events:none;z-index:3;opacity:0;
+  transition:opacity 1.4s ease;
+  background:radial-gradient(ellipse at center,transparent 34%,rgba(176,57,44,.30) 74%,rgba(176,57,44,.62) 100%);
+}
+#wrap{position:relative;z-index:1;width:100%;max-width:720px;padding:28px 22px 80px;display:flex;flex-direction:column}
+
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+h1{font-family:'Song Myung',serif;font-weight:400;font-size:23px;letter-spacing:.22em;color:var(--paper)}
+h1 small{display:block;font-size:11px;letter-spacing:.5em;color:var(--dimmer);margin-top:5px;font-family:'Gothic A1',sans-serif;font-weight:300}
+#when{font-family:'Gothic A1',sans-serif;font-weight:300;font-size:12px;color:var(--dim);text-align:right;letter-spacing:.05em;line-height:1.9;white-space:nowrap}
+
+#gauge{margin:16px 0 6px}
+#gauge .row{display:flex;justify-content:space-between;font-family:'Gothic A1',sans-serif;font-size:11px;font-weight:500;letter-spacing:.14em;color:var(--dim);margin-bottom:7px}
+#gauge .row b{color:var(--ju-lit);font-weight:500}
+#bar{height:2px;background:var(--line);position:relative;overflow:hidden}
+#bar i{display:block;height:100%;width:30%;background:var(--ju);transition:width .8s cubic-bezier(.4,0,.2,1)}
+#tier{font-family:'Gothic A1',sans-serif;font-size:11px;font-weight:300;color:var(--dimmer);letter-spacing:.1em;margin-top:7px;min-height:16px}
+
+main{flex:1;padding:30px 0 4px}
+.p{margin-bottom:19px;animation:fade .7s ease both}
+.p.sp{color:var(--dim);font-style:italic}
+.p.said{padding-left:16px;border-left:1px solid var(--line)}
+.p.mind{padding-left:16px;border-left:1px solid var(--ju);color:var(--ju-lit);font-size:16px}
+.p.got{font-family:'Gothic A1',sans-serif;font-weight:500;font-size:12.5px;letter-spacing:.1em;color:var(--ok);border:1px solid rgba(110,158,146,.35);padding:9px 13px;display:inline-block;line-height:1.6}
+.p.bad{font-family:'Gothic A1',sans-serif;font-weight:500;font-size:12.5px;letter-spacing:.1em;color:var(--ju-lit);border:1px solid rgba(176,57,44,.4);padding:9px 13px;display:inline-block;line-height:1.6}
+.p.hd{font-family:'Song Myung',serif;font-size:19px;letter-spacing:.16em;color:var(--paper);margin:34px 0 20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+@keyframes fade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+#acts{display:flex;flex-direction:column;gap:9px;padding-top:14px}
+button{
+  font-family:'Nanum Myeongjo',serif;font-size:16px;color:var(--paper);
+  background:transparent;border:1px solid var(--line);padding:13px 17px;
+  text-align:left;cursor:pointer;transition:border-color .2s,background .2s,color .2s;line-height:1.6;
+}
+button:hover:not(:disabled),button:focus-visible{border-color:var(--paper);background:var(--night2);outline:none}
+button:disabled{color:var(--dimmer);border-color:#212a40;cursor:default}
+button .k{font-family:'Gothic A1',sans-serif;font-weight:500;font-size:10.5px;letter-spacing:.16em;color:var(--dimmer);display:block;margin-bottom:3px}
+button.warn:hover{border-color:var(--ju);color:var(--ju-lit)}
+button.gold .k{color:var(--lamp)}
+button.gold:hover{border-color:var(--lamp)}
+
+#clues{margin-top:34px;border-top:1px solid var(--line);padding-top:14px;font-family:'Gothic A1',sans-serif;font-size:12px;font-weight:300;color:var(--dim);letter-spacing:.06em;line-height:2}
+#clues h4{font-weight:500;font-size:10.5px;letter-spacing:.2em;color:var(--dimmer);margin-bottom:8px}
+#clues .c{color:var(--ok)}
+#clues .f{color:var(--lamp)}
+@media(max-width:520px){body{font-size:16px}#wrap{padding:20px 16px 60px}h1{font-size:19px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<div id="bleed"></div>
+
+<div id="wrap">
+  <header>
+    <h1>창귀록<small>倀 鬼 錄</small></h1>
+    <div id="when"></div>
+  </header>
+  <div id="gauge">
+    <div class="row"><span>무병 巫病</span><b id="mval">30</b></div>
+    <div id="bar"><i id="bfill"></i></div>
+    <div id="tier"></div>
+  </div>
+  <main id="main"></main>
+  <div id="nojs" style="padding:30px 0;color:#D9614F;line-height:2">
+    <b>스크립트가 실행되지 않았다.</b><br>
+    <span style="color:#8F94A6;font-size:15px">
+      아이폰에서 파일을 눌러 여는 <b>미리보기 화면</b>은 자바스크립트를 실행하지 않는다.<br>
+      웹에 올려서 <b>Safari 주소창으로 접속</b>하면 정상 작동한다.
+    </span>
+  </div>
+  <div id="acts"></div>
+  <div id="clues"></div>
+  <button id="reset" style="margin-top:16px;align-self:flex-start;border-color:#212a40;padding:7px 12px;font-size:12px;font-family:'Gothic A1',sans-serif;letter-spacing:.14em;color:#5C6379">처음부터</button>
+</div>
+
+<script>
+(function(){var n=document.getElementById('nojs');if(n)n.remove();})();
+window.onerror=function(msg,src,line){
+  var m=document.getElementById('main');
+  if(m)m.innerHTML='<div class="p bad">오류가 났다 — '+msg+' (줄 '+line+')</div>';
+  return false;
+};
+const S={day:1,acts:2,mu:30,buja:3,over:false,clues:new Set(),freed:new Set(),done:new Set(),lost:new Set(),names:new Set(),saw:new Set()};
+
+/* ── 저장 ── */
+const KEY='changgwirok.save.v1';
+let CANSAVE=true;
+try{localStorage.setItem('__t','1');localStorage.removeItem('__t');}catch(e){CANSAVE=false;}
+function save(at){
+  if(!CANSAVE)return;
+  try{localStorage.setItem(KEY,JSON.stringify({at,day:S.day,acts:S.acts,mu:S.mu,buja:S.buja,
+    clues:[...S.clues],freed:[...S.freed],done:[...S.done],lost:[...S.lost]}));}catch(e){}
+}
+function loadSave(){
+  if(!CANSAVE)return null;
+  try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null;}catch(e){return null;}
+}
+function wipe(){if(CANSAVE){try{localStorage.removeItem(KEY);}catch(e){}}}
+function restore(d){
+  S.day=d.day;S.acts=d.acts;S.mu=d.mu;S.buja=d.buja;
+  S.clues=new Set(d.clues);S.freed=new Set(d.freed);S.done=new Set(d.done);S.lost=new Set(d.lost);S.over=false;
+  if(d.at==='night')night();else day();
+}
+function burnout(){
+  final('창귀 倀鬼',[
+    [null,'무병이 넘쳤다. 받지 않은 신이 몸 안에서 터졌다.'],
+    [null,'나는 눈밭 위를 걷고 있다. 발자국이 남지 않는다.'],
+    [null,'저 앞에 사람이 온다. 나는 그의 이름을 안다. 부르면 그가 올 것이다.'],
+    ['said','“...나리.”'],
+    ['sp','부르지 않으려 했다. 그런데 입이 저절로 열렸다. 나는 이제 창귀다.']
+  ]);
+}
+function reset(){
+  wipe();
+  S.day=1;S.acts=2;S.mu=30;S.buja=3;S.over=false;
+  S.clues=new Set();S.freed=new Set();S.done=new Set();S.lost=new Set();
+  intro();
+}
+
+const CLUE={
+  jeung:'제웅과 사주 한 장',
+  chang:'창귀 목격담',
+  ilji:'서운관 관측 일지',
+  jinryo:'활인서 진료부',
+  saju:'사주 한 쌍',
+  jangbu:'성수청 굿 장부',
+  chingching:'참칭의 증거'
+};
+const GHOST={1:['굴각','물지게꾼 억쇠'],2:['이올','백정의 딸 분이'],3:['육혼','늙은 걸인 최노인']};
+const NAMEOF={1:'jinryo',2:'saju',3:'jangbu'};
+const BENE={1:'판윤댁 셋째 아들',2:'종친가 규수 이씨',3:'서운관 판사 본인'};
+
+const E=(s)=>document.getElementById(s);
+const has=(c)=>S.clues.has(c);
+function give(c){S.clues.add(c);}
+function mu(n){S.mu=Math.max(0,Math.min(100,S.mu+n));}
+
+function tier(){
+  const m=S.mu;
+  if(m<40)return '멀쩡하다. 아무것도 보이지 않는다.';
+  if(m<60)return '신안이 열렸다. 어둠 속의 것이 보인다.';
+  if(m<80)return '남의 속이 들린다. 듣지 않으려 해도 들린다.';
+  if(m<100)return '들리는 것에 거짓이 섞인다. 무엇이 참인지 모르겠다.';
+  return '임계. 받거나, 죽거나.';
+}
+function paint(){
+  E('mval').textContent=S.mu;
+  E('bfill').style.width=S.mu+'%';
+  E('tier').textContent=tier();
+  E('bleed').style.opacity=Math.max(0,(S.mu-25)/100).toFixed(2);
+  E('when').innerHTML=(S.day<4?`섣달 스무이레 +${S.day-1}일`:'섣달 그믐 — 나례')+`<br>남은 발품 ${S.acts} · 부적 ${S.buja}`;
+  const cl=[...S.clues].map(c=>`<span class="c">${CLUE[c]}</span>`);
+  const fr=[...S.freed].map(g=>`<span class="f">${GHOST[g][0]} 해방</span>`);
+  E('clues').innerHTML='<h4>손에 쥔 것</h4>'+([...cl,...fr].join(' · ')||'<span style="color:#4A5169">아직 없다</span>');
+}
+
+let queue=[];
+function show(nodes,choices){
+  if(S.mu>=100&&!S.over){S.over=true;return burnout();}
+  const m=E('main');m.innerHTML='';E('acts').innerHTML='';
+  nodes.forEach((n,i)=>{
+    const d=document.createElement('div');
+    d.className='p'+(n[0]?' '+n[0]:'');
+    d.style.animationDelay=(i*.11)+'s';
+    d.innerHTML=n[1];m.appendChild(d);
+  });
+  (choices||[]).forEach(c=>{
+    const b=document.createElement('button');
+    if(c.cls)b.className=c.cls;
+    b.innerHTML=(c.k?`<span class="k">${c.k}</span>`:'')+c.t;
+    if(c.off){b.disabled=true;}else{b.onclick=()=>{c.f();};}
+    E('acts').appendChild(b);
+  });
+  paint();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── 서장 ── */
+function intro(){
+  show([
+    ['hd','서장 — 열아흐레, 청계천 어귀'],
+    [null,'짚으로 엮은 사람 하나가 눈밭에 누워 있다. 팔도 다리도 대충 꼬아 만든 것이 어린애 장난 같은데, 어제 이 자리에서 물지게꾼 하나가 사라졌다.'],
+    [null,'제웅이다. 정월 대보름에 액을 대신 지고 버려지는 인형.'],
+    ['sp','아무도 이 여섯을 찾지 않는다. 물지게꾼, 백정의 딸, 걸인 셋, 그리고 이름도 모르는 아이 하나. 그래서 이 일이 나에게 왔다. 역적의 자식에게 맡길 만한 일이라는 뜻이다.'],
+    [null,'배를 갈랐다. 종이 두 장이 나온다. 한 장엔 사라진 자의 사주. 다른 한 장은 —'],
+    ['sp','비어 있다. 아니, 비어 있는 것이 아니라 <b>지워져</b> 있다.']
+  ],[
+    {k:'신안 神眼',t:'눈을 뜬다. 보고 싶지 않은 것까지 본다.',cls:'warn',f:()=>{mu(10);introB(true);}},
+    {k:'외면',t:'그냥 관아로 돌아간다.',f:()=>introB(false)}
+  ]);
+}
+function introB(saw){
+  const n=[['hd','좌포도청 — 종사관']];
+  if(saw){
+    n.push([null,'눈을 뜨자 눈밭 위에 발자국이 보인다. 사람의 것이 아니다. 앞발이 뒷발보다 크다.']);
+    n.push(['mind','그리고 짚 인형 위에, 아직 마르지 않은 온기가 앉아 있다. 누군가 방금까지 여기 있었다.']);
+    give('jeung');
+    n.push(['got','손에 넣었다 — 제웅과 사주 한 장']);
+  }else{
+    n.push([null,'짚 인형을 소매에 넣고 돌아섰다. 아무것도 보지 않았다. 아무것도 보지 않으면 아무것도 앓지 않는다.']);
+    give('jeung');
+    n.push(['got','손에 넣었다 — 제웅과 사주 한 장']);
+  }
+  n.push([null,'종사관이 문서를 던진다. 나를 거둬준 사람이다. 이 도성에서 나를 사람 취급하는 유일한 자.']);
+  n.push(['said','“나흘이다. 그믐 나례 전에 덮어라. 못 덮으면 네 아비 얘기가 다시 나온다.”']);
+  n.push(['sp','나흘. 여덟 번의 발품. 그 안에 여섯을 죽인 자를 찾아야 한다.']);
+  show(n,[{k:'수사 개시',t:'나간다.',f:day}]);
+}
+
+/* ── 낮 ── */
+function day(){
+  if(S.acts<=0){night();return;}
+  save('day');
+  const c=[];
+  const A=(id,k,t,fn,cls)=>{
+    if(S.done.has(id)||S.lost.has(id))return;
+    c.push({k,t,cls,f:fn});
+  };
+  A('kkokdu','청계천 다리 밑','꼭두쇠를 만난다 — 걸인패 두목',()=>kkokdu());
+  if(has('chang')) A('seoun','서운관','겁 많은 관원을 붙든다',()=>seoun());
+  if(has('ilji')) A('hwarin','활인서','별제를 만난다 — 빈민을 돌보는 관리',()=>hwarin());
+  if(has('jinryo')) A('gyusu','종친가','병약한 규수를 만난다',()=>gyusu());
+  if(has('saju')) A('gukmu','성수청','국무당 앞에 선다',()=>gukmu());
+  A('dokkaebi','수표교 아래','도깨비와 거래한다 — 참말 하나에 메밀묵 한 그릇',()=>dokkaebi(),'gold');
+  c.push({k:'현장',t:'실종 현장을 다시 살핀다.',cls:'warn',f:()=>scene()});
+  c.push({k:'휴식',t:'앓아눕는다. 무병이 가라앉는다. (−12)',f:()=>{S.acts--;mu(-12);day();}});
+  show([
+    ['hd',(S.day<4?`${S.day}일차 — 낮`:'그믐 — 낮')],
+    ['sp',`남은 발품 ${S.acts}. 도성은 넓고 나흘은 짧다.`]
+  ],c);
+}
+function scene(){
+  S.acts--;mu(12);
+  const n=[['hd','실종 현장'],[null,'눈이 또 왔다. 발자국은 지워졌다. 그러나 눈을 뜨면 아직 남아 있다.']];
+  if(S.mu>=80){
+    n.push(['mind','짚 인형이 고개를 든다. 나를 본다. 웃는다.']);
+    n.push(['sp','...아니다. 짚은 고개를 들지 않는다. 내가 잘못 본 것이다. 잘못 본 것이어야 한다.']);
+  }else{
+    n.push(['mind','앞발이 뒷발보다 크다. 호랑이다. 그런데 호랑이는 사람을 끌고 가지 인형을 놓고 가지 않는다.']);
+    n.push(['sp','누군가 호랑이에게 <b>이 사람이오</b> 하고 일러준 것이다.']);
+  }
+  show(n,[{k:'계속',t:'돌아선다.',f:day}]);
+}
+
+/* ── 심문 엔진 ── */
+function grill(cfg){
+  const opts=[];
+  if(S.mu>=60){
+    opts.push({k:'신안 神眼',t:'그의 속을 듣는다. (무병 +14)',cls:'warn',f:()=>{
+      mu(14);
+      const lie=S.mu>=80&&Math.random()<0.5;
+      show([['hd',cfg.title],['mind',lie?cfg.false_:cfg.mind],
+        lie?['sp','...정말 그렇게 들렸나? 확신이 서지 않는다.']:['sp','틀림없이 들었다.']],
+        approaches(cfg));
+    }});
+  }
+  show([['hd',cfg.title],...cfg.open],[...opts,...approaches(cfg)]);
+}
+function approaches(cfg){
+  const a=[];
+  a.push({k:'압박',t:cfg.pressText,cls:'warn',f:()=>resolve(cfg,'press')});
+  a.push({k:'회유',t:cfg.softText,f:()=>resolve(cfg,'soft')});
+  const c=cfg.needClue;
+  a.push({k:'물증 제시',t:c?`${CLUE[c]}을(를) 내민다.`:'내밀 것이 없다.',off:!c||!has(c),f:()=>resolve(cfg,'evid')});
+  return a;
+}
+function resolve(cfg,how){
+  S.acts--;
+  const r=cfg[how];
+  const n=[['hd',cfg.title],...r.text];
+  if(r.win){
+    r.win.forEach(c=>give(c));
+    n.push(['got','손에 넣었다 — '+r.win.map(c=>CLUE[c]).join(' · ')]);
+    S.done.add(cfg.id);
+  }
+  if(r.lose){S.lost.add(cfg.id);n.push(['bad','문이 닫혔다 — '+r.lose]);}
+  if(r.mu)mu(r.mu);
+  show(n,[{k:'계속',t:'물러난다.',f:day}]);
+}
+
+/* ── 인물 ── */
+function kkokdu(){grill({
+  id:'kkokdu',title:'청계천 다리 밑 — 꼭두쇠',
+  open:[[null,'거적 위에 앉은 사내가 나를 올려다본다. 눈이 마르다 못해 갈라져 있다.'],
+    ['said','“여섯이오. 여섯이 없어졌는데 관에서 온 건 당신이 처음이오.”'],
+    ['sp','그는 나를 믿지 않는다. 믿을 이유가 없다.']],
+  mind:'저 포교 놈도 결국 덮으러 왔겠지. 억쇠가 돌아온 걸 말하면 나를 미친놈으로 몰아 가둘 테고.',
+  false_:'저놈이 여섯을 죽였다. 저놈이다. 저놈을 죽여야 한다.',
+  needClue:null,
+  press:{text:[['said','“관에서 왔다 이거지. 그럼 잡아가시오.”'],[null,'그는 손목을 내민다. 그리고 그뿐이다. 무엇도 나오지 않았다.'],['sp','이 사내에게 힘은 통하지 않는다. 이미 다 빼앗긴 자다.']],mu:4},
+  soft:{text:[[null,'나는 거적 옆에 앉았다. 포교의 옷을 입은 채로, 걸인 옆에.'],
+    ['said','“...억쇠가 돌아왔소.”'],
+    ['said','“사흘 전 밤에. 물지게를 지고 그대로. 나를 부르더군. 이름을 불렀소.”'],
+    ['said','“근데 그놈 발이 눈에 안 닿았소. 눈 위를 걷는데, 자국이 없었소.”'],
+    ['sp','죽은 자가 산 자의 이름을 부른다. 창귀다.']],win:['chang']},
+  evid:{text:[[null,'내밀 것이 없다.']]}
+});}
+
+function seoun(){grill({
+  id:'seoun',title:'서운관 — 관원',
+  open:[[null,'별을 기록하는 하급 관원. 손이 떨린다. 내가 들어서자 붓을 떨어뜨렸다.'],
+    ['said','“저는... 저는 하늘만 봅니다. 땅의 일은 모릅니다.”'],
+    ['sp','땅의 일을 모르는 자가 왜 이렇게 떠는가.']],
+  mind:'말하면 판사 어른이 안다. 판사 어른이 알면 나도 명부에서 지워진다.',
+  false_:'이 자를 죽여야 산다. 붓을 들어라. 붓을 눈에 꽂아라.',
+  needClue:'chang',
+  press:{text:[['said','“모릅니다! 모른다지 않습니까!”'],
+    [null,'그는 뛰쳐나갔다. 그날 밤 서운관 관사가 비었다. 필사본도 함께 사라졌다.'],
+    ['sp','부술 수는 있었다. 부수면 도망친다는 걸 몰랐을 뿐이다.']],lose:'서운관 관측 일지는 영영 사라졌다',mu:6},
+  soft:{text:[['said','“...당신 이름은 기록에서 빼드리리다.”'],
+    [null,'그가 처음으로 나를 본다.'],
+    ['said','“삼 년입니다. 삼 년 동안 호환이 열두 번 있었는데, 조정은 한 번도 기록하지 않았습니다.”'],
+    ['said','“제가 몰래 베껴 두었습니다. 호환이 있던 밤과, 사람이 사라진 밤이... 같습니다.”'],
+    ['sp','호랑이가 데려간 것이다. 그런데 호랑이는 도성에 들지 않는다. 누군가 문을 열어주지 않는 한.']],win:['ilji']},
+  evid:{text:[[null,'창귀 목격담을 꺼냈다.'],
+    ['said','“죽은 자가 걷는다고요? ...당신도 그걸 보았습니까?”'],
+    [null,'그는 소매에서 두꺼운 필사본을 꺼냈다. 이미 준비되어 있었다. 누군가 물어봐 주기를 기다린 것이다.'],
+    ['said','“호환이 있던 밤과 사람이 사라진 밤이 같습니다. 열두 번 전부.”']],win:['ilji']}
+});}
+
+function hwarin(){grill({
+  id:'hwarin',title:'활인서 — 별제',
+  open:[[null,'가난한 자를 돌보는 관리. 소매가 닳았고 눈매가 선하다. 이 사람은 나쁜 사람일 리 없다.'],
+    ['said','“여섯이나요? 저런... 요즘 유민이 많아 그런 일이 잦습니다.”'],
+    ['sp','잦다고 했다. 사람이 사라지는 일을.']],
+  mind:'넷은 내 진료부에 있던 자들이다. 나는 그저 명단을 넘겼을 뿐이다. 무엇에 쓰는지 나는 몰랐다. 몰랐다. 몰랐어야 했다.',
+  false_:'다 안다. 저 자는 다 안다. 저 자가 진짜다. 지금 목을 졸라라.',
+  needClue:'ilji',
+  press:{text:[['said','“여섯 중 넷이 당신 진료부에 있소. 당신이 골랐소.”'],
+    [null,'그의 손이 멎었다. 오래도록 멎어 있었다.'],
+    ['said','“...아무도 찾지 않을 사람으로 골랐습니다.”'],
+    ['said','“연고 없고, 병들고, 없어져도 아무도 안 찾을 사람. 그게 기준이었습니다. 제가 정한 기준이 아닙니다. 제가 따른 기준입니다.”'],
+    [null,'그가 진료부를 내민다. 넘기는 손이 떨린다.'],
+    ['sp','이 사람은 악인이 아니다. 그래서 더 나쁘다.']],win:['jinryo'],mu:8},
+  soft:{text:[['said','“어려운 일 하십니다. 도와드리고 싶습니다.”'],
+    ['said','“고맙습니다. 그런데 진료부는 관례상 내드리기 어렵습니다.”'],
+    [null,'그는 웃었다. 선한 웃음이었다. 그리고 아무것도 주지 않았다.'],
+    ['sp','선한 자에게 선하게 물으면, 선하게 거절당한다.']]},
+  evid:{text:[['said','“여섯 중 넷이 당신 진료부에 있소.”'],
+    [null,'그의 손이 멎었다.'],
+    ['said','“...아무도 찾지 않을 사람으로 골랐습니다. 그게 기준이었습니다.”'],
+    [null,'그가 진료부를 내민다.']],win:['jinryo'],mu:6}
+});}
+
+function gyusu(){grill({
+  id:'gyusu',title:'종친가 — 규수',
+  open:[[null,'병약한 규수가 이불 밖으로 얼굴만 내밀고 있다. 열여덟이나 되었을까.'],
+    ['said','“저는 죽을 병이었습니다. 작년 겨울에 죽었어야 했지요.”'],
+    ['said','“그런데 살았습니다. 어느 날 아침에, 그냥.”'],
+    ['sp','그냥 살아나는 병은 없다.']],
+  mind:'그날 아침 내 병이 나았고, 그날 밤 물지게꾼이 사라졌다. 나는 안다. 나는 알면서 먹고 자고 웃었다.',
+  false_:'나를 잡아가라. 나를 찢어라. 그게 옳다. 어서.',
+  needClue:'jinryo',
+  press:{text:[['said','“누가 대신 죽었소.”'],
+    [null,'그녀의 눈이 커졌다. 그리고 아주 조용해졌다.'],
+    ['said','“...알고 계셨군요.”'],
+    [null,'그날 밤 그녀는 스스로 목을 맸다. 사주 종이도 함께 태웠다.'],
+    ['sp','부술 수 있었다. 부수면 무너진다는 걸 알았어야 했다.']],lose:'사주 한 쌍은 재가 되었다',mu:12},
+  soft:{text:[['said','“아가씨 잘못이 아닙니다.”'],
+    [null,'그 말에 그녀가 울었다. 오래 참았던 사람처럼.'],
+    ['said','“제 사주를 적은 종이가 있습니다. 어머니가 무당에게서 받아 왔지요.”'],
+    ['said','“그 옆에 다른 사주가 하나 더 있었습니다. 모르는 사람의 것이었습니다.”'],
+    [null,'그녀가 접힌 종이를 내민다. 두 개의 사주가 나란히 적혀 있다. 하나는 그녀. 하나는 — 백정의 딸 분이.'],
+    ['sp','짝이다. 하나가 살면 하나가 죽는다. 이것이 대살이다.']],win:['saju'],mu:6},
+  evid:{text:[['said','“이 진료부에 이름이 있는 자들이 사라졌습니다. 아가씨는 왜 살아 계십니까.”'],
+    [null,'그녀는 오래 나를 보았다. 그리고 종이를 내밀었다.'],
+    ['said','“어머니가 무당에게서 받아 온 것입니다. 제 사주 옆에... 모르는 사람의 사주가 있었습니다.”']],win:['saju'],mu:4}
+});}
+
+function gukmu(){grill({
+  id:'gukmu',title:'성수청 — 국무당',
+  open:[[null,'없는 관청의 없는 사람. 나라가 무속을 금하고, 그 나라가 뒤로 부리는 무당.'],
+    [null,'그녀는 나를 보자마자 웃었다.'],
+    ['said','“왔구나. 언젠가 올 줄 알았다.”'],
+    ['said','“너, 신병 앓았지. 열두 살에. 거부했고.”'],
+    ['sp','아무도 모르는 일이다. 아버지도 몰랐던 일이다.']],
+  mind:'이 아이가 받으면 굿을 멈출 수 있다. 이 아이 아비가 시작한 일이니, 이 아이가 끝내는 것이 옳다.',
+  false_:'이 아이를 산군에게 바쳐라. 오늘 밤. 지금.',
+  needClue:'saju',
+  press:{text:[['said','“잡아가라. 나는 죽을 각오로 굿을 했다.”'],
+    [null,'그녀는 손목을 내민다. 그리고 웃는다. 아무것도 나오지 않았다.'],
+    ['sp','죽을 각오를 한 자에게 죽음을 들이대는 건 협박이 아니다.']],mu:4},
+  soft:{text:[['said','“신을 받아라. 그러면 내가 멈추마.”'],
+    [null,'나는 대답하지 않았다. 대답할 수 없었다.'],
+    ['said','“못 받겠지. 양반이니까. 네 아비도 그랬다.”'],
+    ['sp','아버지를 안다고 했다. 이 여자는 아버지를 안다.']],mu:10},
+  evid:{text:[[null,'사주 한 쌍을 그녀 앞에 놓았다. 규수와 분이. 산 자와 죽은 자.'],
+    ['said','“...그래. 내가 적었다.”'],
+    ['said','“나는 명을 받았다. 어명이라 했다. 서찰에 어보가 없기에 물었더니, 별이 이르는 바를 어보에 앞세울 수 있느냐 하더구나.”'],
+    [null,'그녀가 장부를 내민다. 여섯 쌍의 사주. 그리고 마지막 장에 — 어명을 전한 자의 필체.'],
+    ['said','“그자가 누구인지는 나도 모른다. 다만 하늘을 읽는 자리에 있다.”'],
+    ['sp','하늘을 읽는 자리. 서운관.']],win:['jangbu'],mu:8}
+});}
+
+function dokkaebi(){
+  S.acts--;
+  const qs=[
+    ['누가 사람들을 죽였는가?','“호랑이가.”','참말이다. 그리고 아무 쓸모가 없다.',false],
+    ['누가 제웅에 사주를 적었는가?','“무당의 손이.”','참말이다. 이미 아는 것이다.',false],
+    ['국무당에게 명한 자는 왕인가?','“아니.”','...그것뿐인가. 물은 것만 답한다더니.',false],
+    ['국무당에게 명한 자는 어느 관청에 있는가?','“하늘을 보는 곳에. 별을 세는 곳에. 그자는 이름이 없다. 스스로 지웠으니.”','서운관. 이름을 지운 자. — 손에 잡혔다.',true]
+  ];
+  show([['hd','수표교 아래 — 도깨비'],
+    [null,'다리 밑에서 불빛 하나가 흔들린다. 파란 불이다.'],
+    ['said','“메밀묵.”'],
+    [null,'메밀묵 한 그릇을 놓자 사라졌다. 그릇만 남았다.'],
+    ['said','“하나만 묻거라. 나는 거짓을 못 한다. 대신 물은 것만 답한다.”'],
+    ['sp','물은 것만 답한다. 질문을 잘못하면, 참말을 듣고도 아무것도 얻지 못한다.']
+  ],qs.map(q=>({k:'묻는다',t:q[0],cls:'gold',f:()=>{
+    const n=[['hd','수표교 아래 — 도깨비'],['said',q[1]],['sp',q[2]]];
+    if(q[3]){give('chingching');n.push(['got','손에 넣었다 — 참칭의 증거']);}
+    n.push([null,'파란 불이 꺼졌다. 그릇도 없다.']);
+    show(n,[{k:'계속',t:'다리 위로 올라간다.',f:day}]);
+  }})));
+}
+
+/* ── 밤 ── */
+function night(){
+  const g=S.day;
+  if(g>=4){finale();return;}
+  save('night');
+  const left=[1,2,3].filter(k=>!S.freed.has(k));
+  const c=[];
+  if(S.buja>0)c.push({k:'부적',t:'부적을 태운다. 오늘 밤은 아무것도 보이지 않는다. (무병 −15)',f:()=>{S.buja--;mu(-15);dawn();}});
+  c.push({k:'마주본다',t:'눈을 뜬다. (무병 +18)',cls:'warn',f:()=>{
+    mu(18);
+    const n=[['hd',`${S.day}일차 — 밤`],
+      [null,`눈 위에 ${left.length===1?'하나가':left.length+'이'} 서 있다. 발자국이 없다.`],
+      ['said','“...나리. 제 이름을 아십니까.”'],
+      ['said','“누가 저를 대신 살렸는지 알아야 놓여납니다. 그자의 이름을 주십시오.”'],
+      ['sp',left.map(k=>`창귀 ${GHOST[k][0]} — ${GHOST[k][1]}`).join('<br>')]];
+    const ch=[];
+    left.forEach(k=>{
+      if(has(NAMEOF[k]))ch.push({k:'이름을 준다',t:`${GHOST[k][1]}에게 — “${BENE[k]}. 그자가 너 대신 살았다.”`,f:()=>free(k,dawn)});
+    });
+    ch.push({k:'모른다',t:'“아직 모른다.”',cls:'warn',f:()=>{
+      mu(8);
+      show([['hd','밤'],
+        [null,'그들이 웃었다. 웃는 것 같았다.'],
+        ['said','“그럼 나리가 대신 가시겠습니까.”'],
+        [null,'뒤에서 뜨거운 숨이 닿는다. 돌아보지 않았다. 돌아보면 끝이다.'],
+        ['sp','겨우 살았다. 그러나 오늘 밤, 도성에서 또 하나가 사라졌다.']
+      ],[{k:'날이 샌다',t:'돌아선다.',f:dawn}]);
+    }});
+    show(n,ch);
+  }});
+  show([['hd',`${S.day}일차 — 밤`],
+    [null,'문밖에 눈이 밟히는 소리가 난다. 눈은 오지 않는데.'],
+    ['sp','눈을 뜨면 보인다. 보면 앓는다. 안 보면 아무것도 얻지 못한다.']
+  ],c);
+}
+function free(k,then){
+  S.freed.add(k);
+  show([['hd','해방'],
+    [null,`${GHOST[k][1]}가 오래도록 서 있었다. 그리고 고개를 숙였다.`],
+    ['said','“...아. 그렇습니까.”'],
+    [null,'눈 위의 그림자가 옅어진다. 산군의 서열 하나가 비었다. 오늘 밤 도성에서 아무도 불려나가지 않는다.'],
+    ['got',`창귀 ${GHOST[k][0]} 해방 — ${S.freed.size}/3`],
+    ['sp','수사가 사람을 살렸다.']
+  ],[{k:'계속',t:'돌아선다.',f:then||dawn}]);
+}
+function dawn(){S.day++;S.acts=2;if(S.day>4){finale();return;}day();}
+
+/* ── 종막 ── */
+function finale(){
+  const n=[['hd','그믐 — 나례의 밤'],
+    [null,'방상시 탈을 쓴 자들이 궁을 돌며 잡귀를 쫓는다. 나라가 귀신을 없다 하면서, 귀신을 쫓는 밤이다.'],
+    [null,'북소리 사이로 발소리가 섞인다. 앞발이 뒷발보다 큰 발소리.'],
+    ['sp','산군이 왔다. 그리고 삼차사가 왔다. 명부가 어긋난 도성으로.']];
+  const c=[];
+  [1,2,3].forEach(k=>{
+    if(!S.freed.has(k)&&has(NAMEOF[k])){
+      c.push({k:'이름을 준다',t:`${GHOST[k][1]}에게 — “${BENE[k]}.”`,f:()=>free(k,finale)});
+    }
+  });
+  n.push([null,'이제 이름을 대야 한다. 누가 이 여섯을 골랐는가.']);
+  const accuse=(who)=>{
+    if(who==='pansa'&&(has('chingching')||(has('jangbu')&&has('ilji')))) return end('right');
+    if(who==='pansa') return end('nofact');
+    return end('wrong');
+  };
+  c.push({k:'고발',t:'국무당이다.',f:()=>accuse('mudang')});
+  c.push({k:'고발',t:'서운관 판사다. 왕의 이름을 훔친 자.',f:()=>accuse('pansa')});
+  c.push({k:'침묵',t:'아무 말도 하지 않는다. 덮는다.',f:()=>end('silent')});
+  show(n,c);
+}
+
+function end(kind){
+  if(kind==='silent')return final('관인 官人',[
+    [null,'나는 아무 말도 하지 않았다. 사건은 국무당 하나로 덮였고, 나는 포도부장이 되었다.'],
+    [null,'그해 겨울 도성에서 열아홉이 사라졌다. 아무도 찾지 않는 사람들이었다.'],
+    ['sp','아무도 나를 탓하지 않았다. 그것이 가장 견디기 어려웠다.']
+  ]);
+  if(kind==='wrong')return final('반쪽 半',[
+    [null,'국무당이 목이 잘렸다. 사건은 끝났다고 했다.'],
+    [null,'이레 뒤, 일곱 번째가 사라졌다. 국무당은 이미 죽었는데.'],
+    ['sp','죽은 자들이 산 자를 부르고 있었다. 나는 손 하나를 잘랐을 뿐, 짐승은 살아 있었다.']
+  ]);
+  if(kind==='nofact')return final('무고 誣告',[
+    [null,'나는 서운관 판사를 지목했다. 증거는 없었다.'],
+    [null,'“역적의 자식이 끝내 역적이 되었구나.” 의금부 도사가 말했다. 아버지를 국문했던 그 목소리로.'],
+    ['sp','옳은 이름을 댔다. 그러나 이름만으로는 아무것도 잡을 수 없다.']
+  ]);
+  // right
+  const canReceive=S.mu>=60;
+  const n=[['hd','참칭'],
+    [null,'서운관 판사가 끌려 나왔다. 굿 장부의 필체와 관측 일지의 필체가 같았다.'],
+    [null,'그는 아버지의 옛 동무였다. 함께 대살을 만들었고, 아버지를 팔고, 자기 이름을 지우고 살아남았다.'],
+    ['said','“네 아비는 멈추려 했다. 그래서 죽었다. 나는 멈추지 않았고, 그래서 살았다.”'],
+    ['sp','그를 잡았다. 그런데 산군은 아직 문밖에 있다. 굶은 신은 사람을 잡아서 배가 부르지 않는다.']];
+  const c=[];
+  if(canReceive){
+    n.push([null,'국무당이 옥에서 마지막 말을 보냈다. “제사를 되살려라. 제관은 신을 받은 자여야 한다.”']);
+    c.push({k:'받는다',t:'무릎을 꿇는다. 신을 받는다.',cls:'warn',f:()=>{
+      const perfect=S.freed.size>=3;
+      if(perfect)return final('아들 子',[
+        [null,'나는 인왕산에 올라 제상을 차렸다. 삼십 년 만의 산신제였다.'],
+        [null,'백호가 내려와 절을 받았다. 도성에서 다시는 사람이 사라지지 않았다.'],
+        [null,'창귀 셋이 모두 이름을 찾아 떠났다. 억쇠도, 분이도, 최노인도.'],
+        ['said','“아버지. 제가 갚았습니다.”'],
+        ['sp','나는 무당이 되었다. 사람으로는 다시 돌아가지 못했다. 그래도 이것이 옳았다.']
+      ]);
+      return final('제관 祭官',[
+        [null,'나는 인왕산에 올라 제상을 차렸다. 백호가 내려와 절을 받았다. 도성은 구했다.'],
+        [null,'그러나 이름을 찾지 못한 창귀들은 아직 눈 위를 걷는다. 내가 늦었기 때문이다.'],
+        ['sp','나는 무당이 되었다. 사람으로는 돌아가지 못한다. 그리고 아직도 밤마다 누가 내 이름을 부른다.']
+      ]);
+    }});
+  }else{
+    n.push(['sp','국무당이 무어라 전했다는데, 나는 듣지 못했다. 내 눈은 이미 닫혀 있었다.']);
+  }
+  c.push({k:'거부',t:'끝까지 사람으로 남는다.',f:()=>final('인간 人間',[
+    [null,'나는 신을 받지 않았다. 양반의 자식으로, 사람으로 죽었다.'],
+    [null,'진실은 모두 밝혀졌다. 서운관 판사는 저잣거리에서 목이 잘렸다.'],
+    [null,'그리고 그믐 밤, 산군이 도성에 들었다. 아무것도 멈추지 않았다.'],
+    ['sp','옳은 일을 다 했다. 그런데 아무도 살리지 못했다.']
+  ])});
+  show(n,c);
+}
+
+function final(title,body){
+  wipe();
+  const stat=`무병 ${S.mu} · 해방한 창귀 ${S.freed.size}/3 · 단서 ${S.clues.size}/7 · 잃은 문 ${S.lost.size}`;
+  show([['hd','종막 — '+title],...body,
+    ['sp','———'],
+    ['got',stat]
+  ],[{k:'다시',t:'처음부터 다시 한다.',f:reset}]);
+}
+
+/* ── 표지 ── */
+function boot(){
+  const d=loadSave();
+  const c=[];
+  if(d){
+    const where=d.at==='night'?`${d.day}일차 밤`:(d.day<4?`${d.day}일차 낮`:'그믐');
+    c.push({k:'이어하기',t:`${where} — 무병 ${d.mu} · 단서 ${d.clues.length}개`,f:()=>restore(d)});
+  }
+  c.push({k:'처음부터',t:'서장부터 시작한다.',f:reset});
+  const n=[
+    ['hd','창귀록 倀鬼錄'],
+    [null,'짚으로 엮은 사람이 눈밭에 누워 있다. 어제 이 자리에서 물지게꾼 하나가 사라졌다.'],
+    ['sp','호랑이에게 잡아먹힌 자는 창귀가 된다. 창귀는 다음 사람을 데려와야만 놓여난다.<br>놓여나는 길은 하나뿐 — <b>자기 대신 살아남은 자의 이름</b>을 듣는 것.'],
+    [null,'나흘이다. 그믐 나례 전에 이름을 찾아라.']
+  ];
+  if(!CANSAVE)n.push(['bad','이 화면에서는 진행이 저장되지 않는다 — HTML 파일을 직접 열면 저장된다']);
+  show(n,c);
+}
+
+/* 게임을 먼저 띄운다. 장식은 그 다음이다. */
+try{
+  E('reset').onclick=()=>{if(confirm('진행한 것을 모두 버리고 처음부터 시작합니다.'))reset();};
+}catch(e){}
+
+boot();
+
+/* 별 — 실패해도 게임은 굴러가야 한다 */
+try{
+  const cv=E('stars'),x=cv.getContext('2d');
+  if(x){
+    const r=()=>{
+      cv.width=innerWidth;cv.height=innerHeight;
+      x.clearRect(0,0,cv.width,cv.height);
+      for(let i=0;i<110;i++){
+        const a=Math.random()*.6+.08;
+        x.fillStyle=`rgba(231,225,210,${a})`;
+        const s=Math.random()<.15?1.6:1;
+        x.fillRect(Math.random()*cv.width,Math.random()*cv.height,s,s);
+      }
+    };
+    r();addEventListener('resize',r);
+  }
+}catch(e){}
+</script>
+</body>
+</html>
