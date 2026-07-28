@@ -39,7 +39,7 @@ h1 small{display:block;font-size:11px;letter-spacing:.5em;color:var(--dimmer);ma
 #gauge .row{display:flex;justify-content:space-between;font-family:'Gothic A1',sans-serif;font-size:11px;font-weight:500;letter-spacing:.14em;color:var(--dim);margin-bottom:7px}
 #gauge .row b{color:var(--ju-lit);font-weight:500}
 #bar{height:2px;background:var(--line);position:relative;overflow:hidden}
-#bar i{display:block;height:100%;width:30%;background:var(--ju);transition:width .8s cubic-bezier(.4,0,.2,1)}
+#bar i{display:block;height:100%;width:20%;background:var(--ju);transition:width .8s cubic-bezier(.4,0,.2,1)}
 #tier{font-family:'Gothic A1',sans-serif;font-size:11px;font-weight:300;color:var(--dimmer);letter-spacing:.1em;margin-top:7px;min-height:16px}
 
 main{flex:1;padding:30px 0 4px}
@@ -69,6 +69,42 @@ button.gold:hover{border-color:var(--lamp)}
 #clues h4{font-weight:500;font-size:10.5px;letter-spacing:.2em;color:var(--dimmer);margin-bottom:8px}
 #clues .c{color:var(--ok)}
 #clues .f{color:var(--lamp)}
+#goal{font-family:'Gothic A1',sans-serif;font-weight:300;font-size:12px;color:var(--dimmer);letter-spacing:.08em;margin-top:14px;padding-top:12px;border-top:1px solid #1B2338}
+#foot{display:flex;gap:8px;margin-top:18px}
+#foot button{padding:8px 13px;font-size:11.5px;font-family:'Gothic A1',sans-serif;font-weight:500;letter-spacing:.14em;color:var(--dimmer);border-color:#212a40}
+#foot button:hover{color:var(--paper);border-color:var(--line)}
+
+#note{position:fixed;inset:0;z-index:9;background:rgba(8,12,22,.9);display:flex;align-items:flex-end;justify-content:center}
+#note[hidden]{display:none}
+#nsheet{background:var(--night2);border:1px solid var(--line);width:100%;max-width:720px;max-height:84vh;overflow-y:auto;padding:26px 22px 22px}
+#nsheet h3{font-family:'Song Myung',serif;font-weight:400;font-size:18px;letter-spacing:.18em;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+#nsheet h4{font-family:'Gothic A1',sans-serif;font-weight:500;font-size:11px;letter-spacing:.2em;color:var(--dimmer);margin:24px 0 10px}
+#nsheet .me,#nsheet .cs{font-size:14.5px;line-height:1.9;color:var(--dim);border-left:1px solid var(--line);padding-left:14px;margin-bottom:14px}
+#nsheet .me b,#nsheet .cs b{color:var(--paper);font-weight:400}
+#nsheet ul{list-style:none}
+#nsheet li{font-size:14.5px;line-height:1.85;color:var(--dim);padding:10px 0;border-bottom:1px solid #1B2338}
+#nsheet li b{color:var(--ok);font-weight:400}
+#nsheet ul.q li{color:var(--ju-lit);border-bottom:none;padding:5px 0}
+#nsheet ul.q li:before{content:'— '}
+#nsheet .none{font-size:14px;color:var(--dimmer)}
+#nsheet .cnt{font-family:'Gothic A1',sans-serif;font-size:12px;letter-spacing:.14em;color:var(--lamp);margin-bottom:14px}
+#nsheet li.on .t{color:var(--paper)}
+#nsheet li.off .t{color:var(--dimmer)}
+#nsheet li .t{font-family:'Song Myung',serif;font-size:15px;letter-spacing:.06em;display:inline-block}
+#nsheet li .tier{font-family:'Gothic A1',sans-serif;font-size:10px;letter-spacing:.14em;color:var(--dimmer);margin-left:10px}
+#nsheet li.on .tier{color:var(--lamp)}
+#nsheet li .hint{display:block;font-size:13.5px;color:var(--dim);margin-top:4px;line-height:1.7}
+#nsheet li.off .hint{color:#4A5169}
+#nsheet .clr{font-family:'Song Myung',serif;color:var(--lamp);margin-top:18px;font-size:15px;letter-spacing:.08em}
+#nsheet #nclose{margin-top:24px;width:100%;text-align:center;font-family:'Gothic A1',sans-serif;font-size:12px;letter-spacing:.16em;color:var(--dim)}
+#modal{position:fixed;inset:0;z-index:9;background:rgba(8,12,22,.88);display:flex;align-items:flex-end;justify-content:center}
+#modal[hidden]{display:none}
+#sheet{background:var(--night2);border:1px solid var(--line);width:100%;max-width:720px;max-height:82vh;overflow-y:auto;padding:26px 22px 22px}
+#sheet h3{font-family:'Song Myung',serif;font-weight:400;font-size:18px;letter-spacing:.18em;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+#sheet dt{font-family:'Song Myung',serif;font-size:15px;color:var(--paper);letter-spacing:.08em;margin-top:15px}
+#sheet dd{font-size:14.5px;color:var(--dim);line-height:1.8;margin-top:3px}
+#sheet dd b{color:var(--ju-lit);font-weight:400}
+#sheet #close{margin-top:24px;width:100%;text-align:center;font-family:'Gothic A1',sans-serif;font-size:12px;letter-spacing:.16em;color:var(--dim)}
 @media(max-width:520px){body{font-size:16px}#wrap{padding:20px 16px 60px}h1{font-size:19px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -84,10 +120,11 @@ button.gold:hover{border-color:var(--lamp)}
     <div id="when"></div>
   </header>
   <div id="gauge">
-    <div class="row"><span>무병 巫病</span><b id="mval">30</b></div>
+    <div class="row"><span>무병 巫病</span><b id="mval">20</b></div>
     <div id="bar"><i id="bfill"></i></div>
     <div id="tier"></div>
   </div>
+  <div id="goal"></div>
   <main id="main"></main>
   <div id="nojs" style="padding:30px 0;color:#D9614F;line-height:2">
     <b>스크립트가 실행되지 않았다.</b><br>
@@ -98,7 +135,42 @@ button.gold:hover{border-color:var(--lamp)}
   </div>
   <div id="acts"></div>
   <div id="clues"></div>
-  <button id="reset" style="margin-top:16px;align-self:flex-start;border-color:#212a40;padding:7px 12px;font-size:12px;font-family:'Gothic A1',sans-serif;letter-spacing:.14em;color:#5C6379">처음부터</button>
+  <div id="foot">
+    <button id="note-btn">수첩</button>
+    <button id="gloss">용어 풀이</button>
+    <button id="reset">처음부터</button>
+  </div>
+</div>
+
+<div id="note" hidden><div id="nsheet"></div></div>
+
+<div id="modal" hidden>
+  <div id="sheet">
+    <h3>용어 풀이</h3>
+    <dl>
+      <dt>창귀 倀鬼</dt><dd>호랑이에게 잡아먹힌 사람의 넋. 호랑이의 종이 되어, <b>다음 사람을 데려와야만 풀려난다.</b></dd>
+      <dt>제웅</dt><dd>짚으로 엮은 사람 인형. 본래 액운을 대신 지고 버려지는 물건이다.</dd>
+      <dt>사주</dt><dd>태어난 해·달·날·시. 그 사람을 가리키는 이름표 같은 것.</dd>
+      <dt>대살 代殺</dt><dd>죽을 사람 대신 다른 사람을 죽게 만드는 주술.</dd>
+      <dt>산군 山君</dt><dd>산의 주인인 호랑이 신. 제사가 끊기면 굶는다. <b>굶은 신은 사람을 먹는다.</b></dd>
+      <dt>무병 巫病</dt><dd>신내림을 앞둔 사람이 앓는 병. 앓을수록 귀신이 잘 보이지만, <b>100이 되면 죽는다.</b></dd>
+      <dt>신안 神眼</dt><dd>귀신과 사람의 속을 보는 눈. 심문 중 언제든 쓸 수 있다. 쓸 때마다 <b>무병이 오른다.</b></dd>
+      <dt>부적</dt><dd>태우면 하룻밤 귀신을 막아준다. 대신 그 밤엔 아무것도 보지 못한다.</dd>
+      <dt>발품</dt><dd>하루에 움직일 수 있는 횟수. 낮에 세 번.</dd>
+      <dt>포교</dt><dd>조선의 하급 수사관. 당신의 직업이다.</dd>
+      <dt>꼭두쇠</dt><dd>걸인·광대 무리의 우두머리.</dd>
+      <dt>별제 / 관원 / 도사</dt><dd>모두 관청의 관리를 부르는 이름.</dd>
+      <dt>국무당</dt><dd>왕실이 몰래 부리는 최고 무당.</dd>
+      <dt>성수청</dt><dd>왕실 무속을 맡던 관청. 공식적으로는 없는 곳이다.</dd>
+      <dt>서운관</dt><dd>별과 하늘의 조짐을 읽어 임금에게 아뢰던 관청.</dd>
+      <dt>활인서</dt><dd>가난한 자와 병자를 돌보던 관청.</dd>
+      <dt>나례 儺禮</dt><dd>섣달그믐 밤, 궁에서 잡귀를 쫓던 국가 의식. <b>이 게임의 마감 기한이다.</b></dd>
+      <dt>의금부</dt><dd>임금이 직접 부리는 최고 사법기관. 역모를 다스린다. <b>당신 아버지가 죽은 곳이다.</b></dd>
+      <dt>유고 遺稿</dt><dd>죽은 사람이 남긴 글.</dd>
+      <dt>굴각·이올·육혼</dt><dd>창귀의 세 등급. 셋이 갖춰지면 도성 안 누구든 이름으로 불려나간다.</dd>
+    </dl>
+    <button id="close">닫는다</button>
+  </div>
 </div>
 
 <script>
@@ -108,16 +180,23 @@ window.onerror=function(msg,src,line){
   if(m)m.innerHTML='<div class="p bad">오류가 났다 — '+msg+' (줄 '+line+')</div>';
   return false;
 };
-const S={day:1,acts:2,mu:30,buja:3,over:false,clues:new Set(),freed:new Set(),done:new Set(),lost:new Set(),names:new Set(),saw:new Set()};
+/* 상태는 여기 한 곳에만 적는다. save/restore/reset이 전부 이걸 통해 돈다 —
+   예전엔 같은 필드 목록이 네 벌 있었고, 한 벌만 빠뜨려도 이어하기에서 조용히 사라졌다. */
+const SETS=['sabo','incidents','clues','freed','done','lost','names','asked'];
+const INIT=()=>({day:1,acts:3,mu:20,buja:3,over:false,met:false,act2:false,rank:0,pansaGone:false,chase:0,sabo:new Set(),wary:{},gukSeed:false,gukVisited:false,recalled:{},incidents:new Set(),pansaEdge:0,clues:new Set(),freed:new Set(),done:new Set(),lost:new Set(),names:new Set(),asked:new Set()});
+let S=INIT();
+function knows(k){return has(NAMEOF[k])||S.names.has(k);}
 
 /* ── 저장 ── */
 const KEY='changgwirok.save.v1';
 let CANSAVE=true;
 try{localStorage.setItem('__t','1');localStorage.removeItem('__t');}catch(e){CANSAVE=false;}
+/* 테스트용 해금: 주소 끝에 #dev 또는 ?dev 를 붙이면 대살록이 바로 열린다 */
+let DEV=false;
+try{DEV=/(^|[?&#])dev\b/.test(location.search+location.hash);}catch(e){DEV=false;}
 function save(at){
   if(!CANSAVE)return;
-  try{localStorage.setItem(KEY,JSON.stringify({at,day:S.day,acts:S.acts,mu:S.mu,buja:S.buja,
-    clues:[...S.clues],freed:[...S.freed],done:[...S.done],lost:[...S.lost]}));}catch(e){}
+  try{localStorage.setItem(KEY,JSON.stringify({...S,at},(k,v)=>v instanceof Set?[...v]:v));}catch(e){}
 }
 function loadSave(){
   if(!CANSAVE)return null;
@@ -125,8 +204,9 @@ function loadSave(){
 }
 function wipe(){if(CANSAVE){try{localStorage.removeItem(KEY);}catch(e){}}}
 function restore(d){
-  S.day=d.day;S.acts=d.acts;S.mu=d.mu;S.buja=d.buja;
-  S.clues=new Set(d.clues);S.freed=new Set(d.freed);S.done=new Set(d.done);S.lost=new Set(d.lost);S.over=false;
+  S=INIT(); // 세이브에 없는 필드는 초기값을 지킨다 — 구버전 세이브가 NaN을 만들지 않게
+  for(const k in S) if(k in d) S[k]=SETS.includes(k)?new Set(d[k]||[]):d[k];
+  S.over=false;
   if(d.at==='night')night();else day();
 }
 function burnout(){
@@ -140,8 +220,7 @@ function burnout(){
 }
 function reset(){
   wipe();
-  S.day=1;S.acts=2;S.mu=30;S.buja=3;S.over=false;
-  S.clues=new Set();S.freed=new Set();S.done=new Set();S.lost=new Set();
+  S=INIT();
   intro();
 }
 
@@ -152,8 +231,12 @@ const CLUE={
   jinryo:'활인서 진료부',
   saju:'사주 한 쌍',
   jangbu:'성수청 굿 장부',
-  chingching:'참칭의 증거'
+  chingching:'참칭의 증거',
+  yugo:'아버지의 유고'
 };
+const OPENS={chang:'서운관 — 겁 많은 관원',ilji:'활인서 — 별제',
+             jinryo:'종친가 — 규수',saju:'성수청 — 국무당',
+             jangbu:'의금부 — 아버지를 국문한 자'};
 const GHOST={1:['굴각','물지게꾼 억쇠'],2:['이올','백정의 딸 분이'],3:['육혼','늙은 걸인 최노인']};
 const NAMEOF={1:'jinryo',2:'saju',3:'jangbu'};
 const BENE={1:'판윤댁 셋째 아들',2:'종친가 규수 이씨',3:'서운관 판사 본인'};
@@ -165,26 +248,38 @@ function mu(n){S.mu=Math.max(0,Math.min(100,S.mu+n));}
 
 function tier(){
   const m=S.mu;
-  if(m<40)return '멀쩡하다. 아무것도 보이지 않는다.';
-  if(m<60)return '신안이 열렸다. 어둠 속의 것이 보인다.';
-  if(m<80)return '남의 속이 들린다. 듣지 않으려 해도 들린다.';
-  if(m<100)return '들리는 것에 거짓이 섞인다. 무엇이 참인지 모르겠다.';
+  if(m<40)return '억누르고 있다. 신안을 써도 흐릿하게만 보인다. — 이대로는 문턱을 넘지 못한다.';
+  if(m<60)return '아직 얕다. 반쯤 앓은 자는 문턱을 못 넘는다.';
+  if(m<80)return '또렷하다. 신안을 쓰면 남의 속이 들린다.';
+  if(m<90)return '들리는 것에 거짓이 섞이기 시작한다.';
+  if(m<100)return '⚠ 곧 넘친다 — 부적을 태우거나 밤에 자야 한다.';
   return '임계. 받거나, 죽거나.';
 }
 function paint(){
+  if(PQ){
+    E('mval').textContent='—';
+    E('bfill').style.width='0%';
+    E('bleed').style.opacity='0.12';
+    E('tier').textContent='대살록';
+    E('when').innerHTML='십이 년 전 — 역병의 해<br>한중원 韓重遠';
+    E('goal').textContent='아직, 아무도 사라지지 않았다.';
+    E('clues').innerHTML='<h4>손에 쥔 것</h4><span style="color:#4A5169">붓 한 자루</span>';
+    return;
+  }
   E('mval').textContent=S.mu;
   E('bfill').style.width=S.mu+'%';
   E('tier').textContent=tier();
   E('bleed').style.opacity=Math.max(0,(S.mu-25)/100).toFixed(2);
-  E('when').innerHTML=(S.day<4?`섣달 스무이레 +${S.day-1}일`:'섣달 그믐 — 나례')+`<br>남은 발품 ${S.acts} · 부적 ${S.buja}`;
+  E('when').innerHTML=(S.day<5?`섣달 스무엿새 +${S.day-1}일`:'섣달 그믐 — 나례')+`<br>남은 발품 ${S.acts} · 부적 ${S.buja}`;
+  E('goal').textContent=S.act2?'이미 시작된 것을 멈춰라. 그믐 나례가 오기 전에.':'여섯을 죽인 자를 찾아라. 그믐 나례까지 닷새.';
   const cl=[...S.clues].map(c=>`<span class="c">${CLUE[c]}</span>`);
   const fr=[...S.freed].map(g=>`<span class="f">${GHOST[g][0]} 해방</span>`);
   E('clues').innerHTML='<h4>손에 쥔 것</h4>'+([...cl,...fr].join(' · ')||'<span style="color:#4A5169">아직 없다</span>');
 }
 
-let queue=[];
+let PQ=false, PQNAME=false;
 function show(nodes,choices){
-  if(S.mu>=100&&!S.over){S.over=true;return burnout();}
+  if(!PQ&&S.mu>=100&&!S.over){S.over=true;return burnout();}
   const m=E('main');m.innerHTML='';E('acts').innerHTML='';
   nodes.forEach((n,i)=>{
     const d=document.createElement('div');
@@ -204,61 +299,228 @@ function show(nodes,choices){
 }
 
 /* ── 서장 ── */
+/* 신안 선택은 서장과 건너뛰기 화면 둘이 공유한다 — 무병 +8이 한 곳에만 있게 상수로 둔다 */
+const INTRO_PICK=[
+  {k:'신안 神眼',t:'눈을 뜬다. 보고 싶지 않은 것까지 본다. (무병 +8)',cls:'warn',f:()=>{mu(8);introB(true);}},
+  {k:'외면',t:'덮어둔다. 보지 않으면 앓지도 않는다.',f:()=>introB(false)}
+];
 function intro(){
   show([
     ['hd','서장 — 열아흐레, 청계천 어귀'],
     [null,'짚으로 엮은 사람 하나가 눈밭에 누워 있다. 팔도 다리도 대충 꼬아 만든 것이 어린애 장난 같은데, 어제 이 자리에서 물지게꾼 하나가 사라졌다.'],
-    [null,'제웅이다. 정월 대보름에 액을 대신 지고 버려지는 인형.'],
-    ['sp','아무도 이 여섯을 찾지 않는다. 물지게꾼, 백정의 딸, 걸인 셋, 그리고 이름도 모르는 아이 하나. 그래서 이 일이 나에게 왔다. 역적의 자식에게 맡길 만한 일이라는 뜻이다.'],
-    [null,'배를 갈랐다. 종이 두 장이 나온다. 한 장엔 사라진 자의 사주. 다른 한 장은 —'],
+    [null,'<b>제웅</b>이다. 정월 대보름에 액을 대신 지고 버려지는 인형.'],
+    ['sp','열흘 사이 여섯이다. 물지게꾼, 백정의 딸, 걸인 셋, 이름도 모르는 아이 하나. 아무도 이 여섯을 찾지 않는다. 그래서 이 일이 나에게 왔다.'],
+    ['sp','<b>역적의 자식에게 맡길 만한 일</b>이라는 뜻이다.'],
+    [null,'십이 년 전, 아버지 <b>한중원</b>은 역모로 몰려 의금부 뜰에서 죽었다. 나는 그날 열두 살이었고, 그해에 신병을 앓았고, 신내림을 거부했다.'],
+    ['sp','양반이 무당이 될 수는 없으니까. — 그래서 나는 <b>신을 받지 않은 채 신의 눈만 가진 자</b>가 되었다. 볼 때마다 몸이 상한다.'],
+    [null,'제웅의 배를 갈랐다. 종이 두 장이 나온다. 한 장엔 사라진 자의 사주. 다른 한 장은 —'],
     ['sp','비어 있다. 아니, 비어 있는 것이 아니라 <b>지워져</b> 있다.']
-  ],[
-    {k:'신안 神眼',t:'눈을 뜬다. 보고 싶지 않은 것까지 본다.',cls:'warn',f:()=>{mu(10);introB(true);}},
-    {k:'외면',t:'그냥 관아로 돌아간다.',f:()=>introB(false)}
-  ]);
+  ],INTRO_PICK);
+}
+/* 2회차 이상 — 서장 서술을 건너뛰고 신안 선택 지점으로 바로 들어간다. introB를 그대로 재사용. */
+function skipIntro(){
+  wipe();S=INIT();
+  show([['hd','서장 — 열아흐레, 청계천 어귀'],
+    [null,'열흘 사이 여섯이 사라졌다. 아무도 이들을 찾지 않는다. 그래서 이 일이 나에게 왔다.'],
+    ['sp','<b>역적의 자식에게 맡길 만한 일</b>이라는 뜻이다.'],
+    [null,'눈밭의 짚 인형을 갈랐다. 종이 두 장이 나온다. 한 장엔 사라진 자의 사주. 다른 한 장은 —'],
+    ['sp','비어 있다. 아니, 비어 있는 것이 아니라 <b>지워져</b> 있다.']
+  ],INTRO_PICK);
 }
 function introB(saw){
   const n=[['hd','좌포도청 — 종사관']];
   if(saw){
-    n.push([null,'눈을 뜨자 눈밭 위에 발자국이 보인다. 사람의 것이 아니다. 앞발이 뒷발보다 크다.']);
+    n.push([null,'눈을 뜨자 눈밭 위에 발자국이 보인다. 사람의 것이 아니다. <b>앞발이 뒷발보다 크다.</b>']);
     n.push(['mind','그리고 짚 인형 위에, 아직 마르지 않은 온기가 앉아 있다. 누군가 방금까지 여기 있었다.']);
+    n.push(['mind','사주를 적은 <b>필체.</b> 획을 맺는 버릇이 — 어디선가 본 손이다.']);
+    n.push(['sp','...아니다. 그럴 리 없다. 그 손은 십이 년 전에 죽었다.']);
     give('jeung');
     n.push(['got','손에 넣었다 — 제웅과 사주 한 장']);
   }else{
     n.push([null,'짚 인형을 소매에 넣고 돌아섰다. 아무것도 보지 않았다. 아무것도 보지 않으면 아무것도 앓지 않는다.']);
+    n.push(['sp','다만 사주를 적은 글씨가 눈에 밟혔다. 획을 맺는 버릇이 낯익었는데, 어디서 보았는지는 떠오르지 않았다. 떠올리고 싶지 않았는지도 모른다.']);
     give('jeung');
     n.push(['got','손에 넣었다 — 제웅과 사주 한 장']);
   }
   n.push([null,'종사관이 문서를 던진다. 나를 거둬준 사람이다. 이 도성에서 나를 사람 취급하는 유일한 자.']);
-  n.push(['said','“나흘이다. 그믐 나례 전에 덮어라. 못 덮으면 네 아비 얘기가 다시 나온다.”']);
-  n.push(['sp','나흘. 여덟 번의 발품. 그 안에 여섯을 죽인 자를 찾아야 한다.']);
+  n.push(['said','“닷새다. 그믐 나례 전에 덮어라.”']);
+  n.push(['said','“못 덮으면 위에서 네 아비 얘기를 다시 꺼낼 거다. 그러면 나도 너를 못 지킨다.”']);
+  n.push(['sp','닷새. 열다섯 번의 발품. — 막히면 화면 아래 <b>수첩</b>을 열어라. 알아낸 것이 무슨 뜻인지 적혀 있다.']);
   show(n,[{k:'수사 개시',t:'나간다.',f:day}]);
 }
 
 /* ── 낮 ── */
+const MORN={
+ 1:'첫날이다. 손에 쥔 것은 짚 인형 하나뿐이다. — 그리고 그 사주의 필체가 자꾸 눈에 밟힌다.',
+ 2:'이틀째. 밤새 눈이 왔다. 도성은 아무 일도 없었던 얼굴을 하고 있다. 십이 년 전에도 그랬다.',
+ 3:'사흘째. 종사관이 두 번 물었다, 아직이냐고. — 위에서 벌써 아버지 이름을 꺼냈다는 뜻이다.',
+ 4:'나흘째. 그믐이 코앞이다. 밤마다 눈 위의 것들이 늘어간다.',
+ 5:'그믐이다. 오늘 밤 나례가 열린다. 오늘이 마지막이다.'
+};
+/* ── 인물 접근 층위 & 심문 준비 조건 ── */
+const PEOPLE=[
+  {id:'kkokdu', name:'청계천 다리 밑 — 꼭두쇠',   tier:1, fn:kkokdu, ready:()=>true,            need:null},
+  {id:'hwarin', name:'활인서 — 별제',             tier:1, fn:hwarin, ready:()=>has('ilji'),      need:'호랑이가 골라 물었다는 증좌 — 관측 일지 같은 것'},
+  {id:'seoun',  name:'서운관 — 겁 많은 관원',      tier:1, fn:seoun,  ready:()=>has('chang'),     need:'하늘의 일이라 믿게 할 무엇 — 창귀의 자취'},
+  {id:'uigeum', name:'의금부 — 도사',             tier:2, fn:uigeum, ready:()=>has('jangbu'),    need:'국무당이 어명을 참칭했다는 정황',
+     show:()=>S.act2 || has('jangbu')},
+  {id:'gyusu',  name:'종친가 — 병약한 규수',       tier:3, fn:gyusu,  ready:()=>has('jinryo'),    need:'그 집이 무엇을 감췄는지 — 활인서 진료부',
+     show:()=>has('jinryo')||has('jangbu')||S.act2},
+  {id:'gukmu',  name:'성수청 — 국무당',           tier:3, fn:gukmu,  ready:()=>has('saju'),      need:'대살의 물증 — 살고 죽은 사주 한 쌍',
+     show:()=>has('saju')||has('jinryo')||S.act2},
+];
+function personVisible(p){
+  if(S.done.has(p.id)||S.lost.has(p.id))return false;
+  return p.show?p.show():true;
+}
+/* 단서가 영영 사라지면 그 단서를 열쇠로 쓰는 뒷사람들도 영영 열리지 않는다.
+   ponytail: 사슬이 선형이라 손으로 적었다. 인물이 늘면 ready()에서 역산할 것. */
+const CHAIN={seoun:['hwarin','gyusu','gukmu','uigeum'],gyusu:['gukmu','uigeum']};
+/* 압박으로 단서를 잃으면 뒷문이 닫힌다 — 무엇이 닫혔는지 화자가 안다.
+   seoun/gyusu는 굿 장부까지의 줄을 끊고, uigeum은 판사 추격만 끊는다(산군 대면 불가). */
+const DEADFALL={
+ seoun:'관측 일지가 사라지자 그 뒤의 문이 전부 닫혔다. 활인서도, 종친가도, 성수청도. 이 줄 하나에 나머지가 매여 있었다.',
+ gyusu:'사주 한 쌍이 재가 되었다. 국무당에게 내밀 물증이 이것뿐이었다. 성수청의 문은 이제 열리지 않는다.',
+ uigeum:'아버지의 유고를 잃었다. 필체를 맞댈 것이 없으니 판사를 끝까지 쫓지 못한다. 나례의 밤, 산군 앞에 설 일은 오지 않는다.'};
+/* [보강 3] 재심문 — 2막에서 이미 만난 인물을 다시 찾으면 새 말이 나온다 */
+const RECALL={
+ hwarin:{ once:'hwarin', title:'활인서 — 다시, 별제',
+   text:[[null,'별제는 나를 보자 손이 굳었다. 이미 다 털어놓은 사람의 얼굴이 아니다.'],
+     ['said','“…또 사라졌다지요. 제가 넘긴 명단은 여섯이었는데. 어찌 일곱이, 여덟이….”'],
+     ['said','“제가 고른 자들이 아직도 사람을 데려간다는 겁니까. 제 손이 아직도.”'],
+     [null,'그가 무너지듯 말을 이었다. 처음엔 감췄던 것이다.'],
+     ['said','“…명단을 가지러 온 자가 있었소. 서운관 관복을 입고, 이름은 대지 않았소. 허나 그 필체를, 제가 기억하오.”'],
+     ['sp','판사가 직접 움직인 흔적이다. 참칭의 증거가 굳어진다.']],
+   /* 별제가 입을 여는 이 한 장면이 정황도 주고 증언도 굳힌다. 재심문은 1회뿐이라
+      둘 중 하나만 주면, 정황을 여기서 얻은 플레이어는 방치를 되돌릴 수단을 영영 잃는다. */
+   gain:()=>{ const had=has('chingching'); if(!had)give('chingching');
+              S.pansaEdge=Math.max(0,S.pansaEdge-1);
+              return had ? '흔들렸던 증언이 다시 굳었다. 판사를 옭아맬 끈이 팽팽해진다.'
+                         : '손에 넣었다 — 참칭의 정황(판사가 직접 명단을 가져갔다). 흔들렸던 증언도 함께 굳었다.'; }},
+ kkokdu:{ once:'kkokdu', title:'청계천 다리 밑 — 다시, 꼭두쇠',
+   text:[[null,'꼭두쇠는 거적을 뒤집어쓴 채 떨고 있었다. 추위 때문이 아니다.'],
+     ['said','“또 봤소. 이번엔 분이였소. 나를 부르지 않고, 지나가는 아이를 불렀소.”'],
+     ['said','“나리, 저것들이 이름을 부르기 시작하면… 아무도 못 배기오. 얼른 끝내주시오.”'],
+     [null,'그가 품에서 무언가를 꺼냈다. 죽은 자들이 쓰던 물건, 창귀를 붙드는 미끼다.'],
+     ['said','“이걸 태우면 하룻밤은 잠잠하오. 걸인들이 대대로 쓰던 법이오.”'],
+     ['sp','창귀의 걸음을 하룻밤 늦출 수 있다.']],
+   gain:()=>{ if(S.rank>0){ S.rank--; return '창귀의 서열이 한 단계 물러났다. 시간을 조금 벌었다.'; }
+              S.buja++; return '부적 하나를 얻었다. 오늘 밤이 조금 덜 위태롭다.'; }},
+};
+function interrogateBox(){
+  const list=PEOPLE.filter(personVisible);
+  const c=list.map(p=>{
+    const rdy=p.ready();
+    return {
+      k:p.name,
+      t: rdy ? LEAD[p.id] : (SHUT[p.id]||'아직 입을 열 것 같지 않다.'),
+      f: p.fn
+    };
+  });
+  // 2막: 이미 만난 인물 중 재심문 가능한 자
+  if(S.act2){
+    Object.keys(RECALL).forEach(id=>{
+      const r=RECALL[id];
+      if(S.done.has(id) && !S.recalled[id]){
+        c.push({k:r.title,t:'다시 한 번 찾아가 본다. 무언가 달라졌을지 모른다.',cls:'warn',f:()=>recall(id)});
+      }
+    });
+  }
+  c.push({k:'돌아간다',t:'심문 대상을 고르지 않고 물러난다.',f:day});
+  const n=[['hd','누구를 심문할 것인가'],
+    ['sp','도성은 넓고, 사람마다 열리는 때가 다르다. 누구를 먼저 찾을 것인가.']];
+  show(n,c);
+}
+function recall(id){
+  S.acts--; S.recalled[id]=true;
+  const r=RECALL[id];
+  const body=[['hd',r.title],...r.text];
+  if(r.gain){ const msg=r.gain(); if(msg)body.push(['got',msg]); }
+  show(body,[{k:'물러난다',t:'돌아선다.',f:day}]);
+}
+
 function day(){
   if(S.acts<=0){night();return;}
   save('day');
+  // [보강 2] 2막 낮 시작 시, 판사의 능동적 방해 사건이 터질 수 있다
+  if(S.act2 && S.acts===3 && !S.pansaGone){
+    const inc=INCIDENTS.find(x=>x.when() && !S.incidents.has(x.id));
+    if(inc){ return runIncident(inc); }
+  }
+  dayMenu();
+}
+/* [보강 2 = A] 판사의 능동적 방해 사건 — 2막 낮에 터진다 */
+const INCIDENTS=[
+ {id:'recant', when:()=>S.done.has('hwarin'),
+  title:'이른 아침 — 번복',
+  text:[[null,'관아에 들자마자 서리가 달려왔다. 활인서 별제가 간밤에 진술을 뒤집었다는 것이다.'],
+    ['said','“누가 다녀갔답니다. 높은 데서. 별제가 겁에 질려 명단은 제 것이 아니라 하고 있습니다.”'],
+    ['sp','판사의 손이다. 증인을 눌러 내 증좌를 무너뜨리려 한다. 그냥 두면, 나중에 판사를 고발할 근거 하나가 흔들린다.']],
+  choices:()=>[
+    {k:'달려간다',t:'활인서로 가 별제를 다시 붙든다. (발품 1)',cls:'warn',f:()=>{
+      S.acts--;
+      show([['hd','활인서 — 번복을 되돌리다'],
+        [null,'별제는 떨고 있었다. 나는 그를 다그치지 않았다. 다만 사라진 자들의 이름을 하나씩 불렀다.'],
+        ['said','“…미안하오. 무서웠소. 허나 명단은, 내 손으로 넘긴 게 맞소.”'],
+        ['sp','증언을 되찾았다. 판사의 손이 하나 꺾였다.']
+      ],[{k:'물러난다',t:'수사를 잇는다.',f:dayMenu}]);
+    }},
+    {k:'내버려 둔다',t:'지금은 급한 게 아니다. 그냥 둔다.',f:()=>{
+      S.pansaEdge++;
+      show([['hd','내버려 둔다'],
+        [null,'별제의 번복을 그냥 두었다. 급한 불부터 꺼야 한다.'],
+        ['sp','판사가 유리해졌다. 나중에 그를 고발할 때, 이 흔들린 증언이 발목을 잡을지 모른다.']
+      ],[{k:'하루를 시작한다',t:'수사를 잇는다.',f:dayMenu}]);
+    }}
+  ]},
+ {id:'summon', when:()=>S.chase>=1,
+  title:'이른 아침 — 부름',
+  text:[[null,'종사관이 나를 불렀다. 얼굴이 굳어 있다.'],
+    ['said','“의금부에서 너를 보자 한다. 판사를 무고한 죄를 묻겠다는 게야. …가지 마라. 가면 못 나온다.”'],
+    ['sp','판사가 나를 옭아매려 한다. 부름에 응하면 발이 묶이고, 무시하면 죄가 하나 얹힌다.']],
+  choices:()=>[
+    {k:'응하지 않는다',t:'부름을 무시하고 수사를 계속한다.',f:()=>{
+      S.pansaEdge++;
+      show([['hd','부름을 무시하다'],
+        [null,'나는 가지 않았다. 종사관이 대신 둘러대 주었다. 그가 나를 지키느라, 또 위태로워졌다.'],
+        ['sp','시간을 벌었다. 그러나 오래 버티지는 못한다.']
+      ],[{k:'하루를 시작한다',t:'수사를 잇는다.',f:dayMenu}]);
+    }},
+    {k:'해명하러 간다',t:'의금부에 가 결백을 밝힌다. (발품 1)',cls:'warn',f:()=>{
+      S.acts--;
+      show([['hd','의금부 — 해명'],
+        [null,'나는 스스로 의금부에 들었다. 위험한 길이었으나, 도망치는 자로 남을 수는 없었다.'],
+        ['said','“역적의 자식이 겁도 없구나.” 도사가 비웃었다. 그러나 증좌 앞에서는 그도 함부로 못 했다.'],
+        ['sp','발품 하나를 썼으나, 무고의 올가미를 벗었다.']
+      ],[{k:'물러난다',t:'수사를 잇는다.',f:dayMenu}]);
+    }}
+  ]}
+];
+function runIncident(inc){
+  S.incidents.add(inc.id);
+  show([['hd',inc.title],...inc.text],inc.choices(dayMenu));
+}
+function dayMenu(){
   const c=[];
-  const A=(id,k,t,fn,cls)=>{
-    if(S.done.has(id)||S.lost.has(id))return;
-    c.push({k,t,cls,f:fn});
-  };
-  A('kkokdu','청계천 다리 밑','꼭두쇠를 만난다 — 걸인패 두목',()=>kkokdu());
-  if(has('chang')) A('seoun','서운관','겁 많은 관원을 붙든다',()=>seoun());
-  if(has('ilji')) A('hwarin','활인서','별제를 만난다 — 빈민을 돌보는 관리',()=>hwarin());
-  if(has('jinryo')) A('gyusu','종친가','병약한 규수를 만난다',()=>gyusu());
-  if(has('saju')) A('gukmu','성수청','국무당 앞에 선다',()=>gukmu());
-  A('dokkaebi','수표교 아래','도깨비와 거래한다 — 참말 하나에 메밀묵 한 그릇',()=>dokkaebi(),'gold');
-  c.push({k:'현장',t:'실종 현장을 다시 살핀다.',cls:'warn',f:()=>scene()});
-  c.push({k:'휴식',t:'앓아눕는다. 무병이 가라앉는다. (−12)',f:()=>{S.acts--;mu(-12);day();}});
-  show([
-    ['hd',(S.day<4?`${S.day}일차 — 낮`:'그믐 — 낮')],
-    ['sp',`남은 발품 ${S.acts}. 도성은 넓고 나흘은 짧다.`]
-  ],c);
+  // 심문: 별도 선택 박스로
+  if(PEOPLE.some(personVisible))
+    c.push({k:'심문한다',t:'사람을 찾아가 묻는다. 누구를 만날지 고른다.',f:interrogateBox});
+  // 판사 추격 (2막 전용, 별도)
+  if(S.act2 && has('chingching') && has('yugo') && !S.pansaGone && !S.done.has('pansa'))
+    c.push({k:'추격',t:LEAD.pansa,cls:'warn',f:pansa});
+  // 옥중 재회 (2막 전용) — 투옥된 국무당 면회
+  if(S.act2 && !S.gukVisited)
+    c.push({k:'의금부 옥 — 국무당',t:'옥에 갇힌 국무당을 면회한다. 그녀는 무언가 더 알고 있다.',cls:'warn',f:gukmuCell});
+  if(dokPool().length) c.push({k:'수표교 아래 — 도깨비',t:LEAD.dokkaebi,cls:'gold',f:dokkaebi});
+  if(!S.done.has('scene')) c.push({k:'실종 현장',t:LEAD.scene+' <b>(무병 +8)</b>',cls:'warn',f:scene});
+  c.push({k:'접는다',t:'오늘은 여기까지. 관아로 돌아가 밤을 기다린다.',f:()=>{S.acts=0;night();}});
+  const n=[['hd',(S.day<5?`${S.day}일차 — 낮`:'그믐 — 낮')]];
+  if(S.acts===3)n.push([null,MORN[S.day]]);
+  n.push(['sp',`오늘 남은 발품 <b>${S.acts}</b>번. — 무엇을 좇을 것인가.`]);
+  show(n,c);
 }
 function scene(){
-  S.acts--;mu(12);
+  S.acts--;mu(8);S.done.add('scene');
   const n=[['hd','실종 현장'],[null,'눈이 또 왔다. 발자국은 지워졌다. 그러나 눈을 뜨면 아직 남아 있다.']];
   if(S.mu>=80){
     n.push(['mind','짚 인형이 고개를 든다. 나를 본다. 웃는다.']);
@@ -270,45 +532,247 @@ function scene(){
   show(n,[{k:'계속',t:'돌아선다.',f:day}]);
 }
 
+
+
+/* ── 수첩: 알아낸 것이 무슨 뜻인가 (쉬운 말로) ── */
+const CASE={
+ jeung:'실종자 자리마다 짚 인형(제웅)이 남았다. 배 속엔 사주가 두 장 — 죽은 자의 것, 그리고 <b>지워진 것 하나.</b>',
+ chang:'죽은 자가 눈 위를 걷는다. 발자국도 없이. <b>창귀</b>다 — 호랑이에게 먹힌 넋. 다음 사람을 데려와야 풀려난다.',
+ ilji:'호랑이가 도성에 든 밤과 사람이 사라진 밤이 <b>정확히 겹친다.</b> 조정은 이 열두 번을 한 번도 기록하지 않았다.',
+ jinryo:'실종자 여섯 중 넷이 활인서 진료부에 있었다. 골라낸 기준은 — <b>“아무도 찾지 않을 사람.”</b>',
+ saju:'사주는 <b>짝으로</b> 적힌다. 하나가 죽고 하나가 산다. <b>대살(代殺)</b>이다 — 목숨을 바꿔치기하는 주술.',
+ jangbu:'굿을 집전한 건 성수청 국무당이다. 그러나 <b>그녀도 명을 받았다.</b> 어보 없는 어명을, “별이 이르는 바”라며.',
+ chingching:'명한 자는 왕이 아니다. <b>서운관</b>에 있고, <b>스스로 제 이름을 지운 자</b>다.',
+ yugo:'아버지 한중원이 <b>대살을 처음 설계했다.</b> 그리고 멈추려다 역적으로 몰려 죽었다. — 둘 다 참이다.'
+};
+const OPENQ=[
+ ['ilji','무엇이 그들을 데려갔는가?'],
+ ['jinryo','누가 그들을 골랐는가?'],
+ ['saju','그들이 죽어서, 누가 대신 살았는가?'],
+ ['jangbu','누가 그 굿을 집전했는가?'],
+ ['chingching','국무당에게 명한 자는 누구인가?'],
+ ['yugo','아버지는 왜 죽었는가?']
+];
+function notebook(){
+  let h='<h3>수첩</h3>';
+  h+='<div class="me"><b>나 — 한서린(韓瑞獜).</b> 좌포도청 포교. 몰락한 양반의 자식.<br>'+
+     '십이 년 전, 아버지 <b>한중원</b>이 역모로 몰려 의금부에서 죽었다. 그때부터 나는 <b>역적의 자식</b>이다.<br>'+
+     '열두 살에 신병을 앓았으나 신내림을 거부했다. 그래서 <b>귀신이 보이는데, 볼 때마다 몸이 상한다.</b></div>';
+  h+='<div class="cs"><b>사건.</b> 열흘 사이 여섯이 사라졌다. 모두 청계천 이남의 가난한 사람들. '+
+     '시신은 없고 짚 인형만 남았다. <b>그믐 나례까지 범인을 찾아야 한다.</b></div>';
+  // 압박으로 줄이 끊겼으면 상시 상기 — 순간의 경고를 5일째에 잊지 않도록
+  const dead=Object.keys(DEADFALL).filter(id=>S.lost.has(id));
+  if(dead.length)h+=`<div class="cs" style="border-color:var(--ju);color:var(--ju-lit)"><b>닫힌 문.</b> ${dead.map(id=>DEADFALL[id]).join('<br>')}</div>`;
+  const got=[...S.clues].filter(c=>CASE[c]);
+  h+='<h4>알아낸 것</h4>';
+  h+=got.length?'<ul>'+got.map(c=>`<li><b>${CLUE[c]}</b><br>${CASE[c]}</li>`).join('')+'</ul>'
+              :'<p class="none">아직 아무것도.</p>';
+  const open=OPENQ.filter(([c])=>!has(c)).map(([,q])=>q);
+  if(S.freed.size<3)open.push('창귀 셋을 어떻게 놓아줄 것인가?');
+  h+='<h4>아직 모르는 것</h4>';
+  h+=open.length?'<ul class="q">'+open.map(q=>`<li>${q}</li>`).join('')+'</ul>':'<p class="none">모두 밝혀졌다.</p>';
+  h+='<button id="nclose">닫는다</button>';
+  E('nsheet').innerHTML=h;
+  E('note').hidden=false;
+  E('nclose').onclick=()=>{E('note').hidden=true;};
+}
+
+/* ── 실마리: 왜 그를 찾아가는가 (한서린의 수첩) ── */
+const LEAD={
+ kkokdu:'사라진 여섯은 모두 청계천 이남 사람이다. 관은 찾지 않았고, 걸인패만이 그들을 가족이라 불렀다 한다.',
+ seoun:'죽은 자가 눈 위를 걷는다. 발자국도 없이. — 이건 사람의 일이 아니다.',
+ hwarin:'호랑이가 든 밤과 사람이 사라진 밤이 겹친다. 짐승이 골라 물었다면, 누군가 골라 준 것이다.',
+ gyusu:'죽을 병이었다던 규수가 하룻밤에 나았다 한다. 누가 죽고 누가 사는지, 정해 두는 손이 있는 모양이다.',
+ gukmu:'사주 두 장이 나란히 적혀 있었다. 하나가 살고, 하나가 죽는 짝.',
+ pansa:'이름을 지운 자가 서운관에 있다. 아버지의 유고에 남은 필체와 대조하면 드러날 것이다. 나례 전에 잡지 못하면 놓친다.',
+ uigeum:'국무당은 어보도 없는 어명을 받았다 했다. 십이 년 전, 아버지의 조서를 적은 손도 그 언저리에 있었다.',
+ dokkaebi:'수표교 아래에 파란 불이 산다. 거짓을 못 하는 것이 산다고들 한다.',
+ scene:'눈이 또 왔다. 발자국은 지워졌을 것이다. — 그래도 눈을 뜨면 아직 남아 있다.'
+};
+/* 선택 박스에서 아직 준비 안 된 인물의 거절 — 인물마다 다르게 */
+const SHUT={
+ hwarin:'별제는 가난한 자들 사이에 바쁘다. 지금 붙들 자리가 아니다.',
+ seoun:'그 겁 많은 관원은 누가 묻기만 해도 몸을 사린다. 함부로 다가갈 상대가 아니다.',
+ gyusu:'종친가의 대문은 높다. 포교의 옷으로는, 아직 열리지 않는다.',
+ gukmu:'없는 관청의 없는 사람. 무엇을 쥐고 가지 않는 한, 만나 주지도 않는다.',
+ uigeum:'의금부 도사는 아버지를 국문한 자다. 빈손으로 그 앞에 서는 건 스스로 오랏줄을 청하는 짓이다.'
+};
+
+/* ── 이동: 한양을 걷는다 ── */
+const TRAVEL={
+ kkokdu:'광통교를 지나 청계천을 따라 내려갔다. 언 개천 위로 거적이 줄지어 있다. 연기 냄새, 그리고 사람 냄새.',
+ seoun:'서운관 마당의 물시계가 얼어 있었다. 하늘을 보는 관청인데, 아무도 하늘을 보고 있지 않다.',
+ hwarin:'활인서 앞에 줄이 길다. 죽을 사람과 아직 죽지 않은 사람이 같은 줄에 서 있다.',
+ gyusu:'종친가의 솟을대문은 높았다. 포교의 옷으로는 잘 열리지 않는 문이다. 세 번 청하고서야 곁문이 열렸다.',
+ gukmu:'성수청은 지도에 없다. 북악 아래, 담장도 문패도 없는 집. 마당에 신장대만 꽂혀 있다.',
+ uigeum:'의금부 문턱을 넘는 데 십이 년이 걸렸다. 아버지는 이 문으로 들어가 나오지 못했다.'
+};
+function road(){
+  const m=S.mu;
+  if(m>=80)return '오는 길에 누가 내 이름을 불렀다. 돌아보니 아무도 없었다. — 아무도 없어야 한다.';
+  if(m>=60)return '오는 길, 사람들 틈에 하나가 발자국을 남기지 않고 걸었다. 돌아보지 않았다.';
+  if(m>=40)return '길가에 짚신 한 짝이 젖은 채로 놓여 있었다. 눈이 왔는데도 젖어 있었다.';
+  return null;
+}
+
 /* ── 심문 엔진 ── */
 function grill(cfg){
-  const opts=[];
-  if(S.mu>=60){
-    opts.push({k:'신안 神眼',t:'그의 속을 듣는다. (무병 +14)',cls:'warn',f:()=>{
-      mu(14);
-      const lie=S.mu>=80&&Math.random()<0.5;
-      show([['hd',cfg.title],['mind',lie?cfg.false_:cfg.mind],
-        lie?['sp','...정말 그렇게 들렸나? 확신이 서지 않는다.']:['sp','틀림없이 들었다.']],
-        approaches(cfg));
-    }});
+  // 준비 안 된 인물을 붙들면 헛걸음 — 발품 손실 + 경계심 상승
+  const person=PEOPLE.find(p=>p.id===cfg.id);
+  if(person && !person.ready()){
+    S.acts--;
+    S.wary[cfg.id]=(S.wary[cfg.id]||0)+1;
+    const brush=cfg.brush; // 준비 조건이 있는 인물은 모두 brush를 갖는다 (check.mjs가 지킨다)
+    show([['hd',cfg.title],
+      ...(TRAVEL[cfg.id]?[[null,TRAVEL[cfg.id]]]:[]),
+      ...brush,
+      ['bad','헛걸음 — 발품 하나를 버렸다. 그가 나를 경계하기 시작한다']
+    ],[{k:'물러난다',t:'돌아선다.',f:day}]);
+    return;
   }
-  show([['hd',cfg.title],...cfg.open],[...opts,...approaches(cfg)]);
+  const lead=[];
+  if(TRAVEL[cfg.id]){
+    lead.push([null,TRAVEL[cfg.id]]);
+    const r=road(); if(r)lead.push(['sp',r]);
+  }
+  const opts=[{k:'신안 神眼',t:'눈을 떠 그의 속을 들여다본다. (무병 +10)',cls:'warn',f:()=>{
+    mu(10);
+    let line,note;
+    if(S.mu<40){line=cfg.vague;note='흐릿하다. 방향만 겨우 잡힌다. — 더 깊이 앓아야 또렷해진다.';}
+    else if(S.mu<80){line=cfg.mind;note='또렷하게 들었다.';}
+    else if(Math.random()<0.5){line=cfg.false_;note='...정말 그렇게 들렸나? 확신이 서지 않는다.';}
+    else{line=cfg.mind;note='또렷하다. 그러나 이제 무엇도 확신할 수 없다.';}
+    show([['hd',cfg.title],['mind',line],['sp',note]],approaches(cfg));
+  }}];
+  show([['hd',cfg.title],...lead,...cfg.open],[...opts,...approaches(cfg)]);
 }
 function approaches(cfg){
   const a=[];
-  a.push({k:'압박',t:cfg.pressText,cls:'warn',f:()=>resolve(cfg,'press')});
-  a.push({k:'회유',t:cfg.softText,f:()=>resolve(cfg,'soft')});
-  const c=cfg.needClue;
-  a.push({k:'물증 제시',t:c?`${CLUE[c]}을(를) 내민다.`:'내밀 것이 없다.',off:!c||!has(c),f:()=>resolve(cfg,'evid')});
+  const wary=S.wary[cfg.id]||0;
+  const softLabel = wary>0 ? (cfg.softT||'달랜다.')+' <span style="color:var(--ju-lit)">(한 번 헛걸음한 탓에 경계한다)</span>' : (cfg.softT||'달랜다.');
+  a.push({k:'압박',t:cfg.pressT||'몰아붙인다.',cls:'warn',f:()=>resolve(cfg,'press')});
+  a.push({k:'회유',t:softLabel,f:()=>{ if(wary>0)mu(4); resolve(cfg,'soft'); }});
+  a.push({k:'물증 제시',t:'품에서 무언가를 꺼낸다.',off:!S.clues.size,f:()=>evidMenu(cfg)});
   return a;
+}
+function evidMenu(cfg){
+  const opts=[...S.clues].map(c=>({k:'내민다',t:CLUE[c],f:()=>{
+    if(c===cfg.needClue)resolve(cfg,'evid');
+    else wrongEvid(cfg,c);
+  }}));
+  opts.push({k:'거둔다',t:'도로 넣는다. 아무것도 내밀지 않는다.',f:()=>grill(cfg)});
+  show([['hd',cfg.title],
+    [null,'품 안의 것들을 헤아린다. 무엇을 내밀 것인가.'],
+    ['sp','헛다리를 짚으면 그는 입을 닫는다. <b>발품 하나가 날아간다.</b>']
+  ],opts);
+}
+function wrongEvid(cfg,c){
+  S.acts--;
+  show([['hd',cfg.title],
+    [null,`${CLUE[c]}을(를) 내밀었다.`],
+    ['said',cfg.wrong||'“...그게 나와 무슨 상관이오.”'],
+    ['sp','헛짚었다. 그는 등을 돌렸다.']
+  ],[{k:'계속',t:'물러난다.',f:day}]);
 }
 function resolve(cfg,how){
   S.acts--;
   const r=cfg[how];
   const n=[['hd',cfg.title],...r.text];
+  const opened=[];
   if(r.win){
-    r.win.forEach(c=>give(c));
+    r.win.forEach(c=>{const fresh=!has(c);give(c);if(fresh&&OPENS[c])opened.push(OPENS[c]);});
     n.push(['got','손에 넣었다 — '+r.win.map(c=>CLUE[c]).join(' · ')]);
     S.done.add(cfg.id);
   }
-  if(r.lose){S.lost.add(cfg.id);n.push(['bad','문이 닫혔다 — '+r.lose]);}
+  if(r.lose){
+    S.lost.add(cfg.id);
+    (CHAIN[cfg.id]||[]).forEach(x=>S.lost.add(x));
+    n.push(['bad','문이 닫혔다 — '+r.lose]);
+    if(DEADFALL[cfg.id])n.push(['sp',DEADFALL[cfg.id]]);
+  }
   if(r.mu)mu(r.mu);
-  show(n,[{k:'계속',t:'물러난다.',f:day}]);
+  opened.forEach(label=>n.push(['got','새 실마리 — '+label+'을(를) 찾아갈 수 있게 되었다']));
+  if(r.win&&r.win.includes('jangbu')&&!S.act2){
+    // 국무당 검거 직전, 유혹의 씨앗을 반드시 거친다 (어느 루트로 잡든)
+    show(n,[{k:'오라를 채운다',t:'국무당을 끌고 간다.',f:gukmuVow}]);
+    return;
+  }
+  show(n,[{k:'물러난다',t:'수사를 잇는다.',f:(r.win&&r.win.includes('jinryo'))?doryeong:day}]);
+}
+
+/* 판윤댁 셋째 — 억쇠 대신 산 자. 셋 중 유일하게 모르는 자다. 활인서에서 진료부를 얻고 나서는 길. */
+function doryeong(){
+  show([['hd','활인서 — 문밖'],
+    [null,'문을 나서는데 말 한 필이 들어왔다. 판윤 대감댁이라고, 견마잡이가 문지기에게 일렀다. 열예닐곱쯤 된 도령이 가볍게 내렸다. 겨울인데 뺨이 붉다.'],
+    [null,'집에서 보낸 진휼 약재가 닿았는지 물으러 왔다 한다. 종에게 시키지 않고 제 입으로 물었다. 문지기에게 읍을 하고, 나에게도 같은 읍을 했다.'],
+    ['said','“어른 먼저 드시지요.”'],
+    [null,'포교의 옷을 입은 자에게 판윤댁 자제가 읍을 할 까닭이 없다. 문지기에게는 더욱 없다.'],
+    ['sp','물어볼 것이 없다. 이 아이는 아무것도 모른다. 모르는 것이 이 아이의 죄는 아니다.']
+  ],[{k:'지나간다',t:'아무 말도 하지 않는다. 할 말이 없어서가 아니다.',f:day}]);
+}
+
+/* ── [줄기 1] 전환점 — 2막 진입 ── */
+/* [보강 1] 옥중 재회 — 투옥된 국무당 면회 */
+function gukmuCell(){
+  S.acts--; S.gukVisited=true;
+  const first=!S.gukSeed;
+  const n=[['hd','의금부 옥 — 국무당'],
+    [null,'어두운 옥 안, 국무당은 벽에 기대앉아 있었다. 나를 보고도 놀라지 않는다.'],
+    ['said','“올 줄 알았다. 늘 그랬듯이.”']];
+  if(first){
+    n.push([null,'그녀에게 물었다. 굿을 멈췄는데 왜 아직도 사람이 사라지느냐고.']);
+    n.push(['said','“죽은 것이 죽은 것을 부르기 때문이지. 손을 묶어도, 이미 시작된 것은 멎지 않는다.”']);
+    n.push(['said','“멈추는 길은 하나뿐이다. 끊긴 산신제를 되살리는 것. 그리고 그 제관은 — <b>신을 받은 자</b>여야 한다.”']);
+    S.gukSeed=true;
+  }else{
+    n.push([null,'끌려가기 전 그녀가 남긴 말을, 나는 잊지 못했다. 신을 받은 자만이 제관이 될 수 있다던.']);
+    n.push(['said','“마음이 섰느냐. 아직도 사람으로 남고 싶으냐.”']);
+  }
+  n.push(['said','“너는 네 아비가 시작한 일을 끝낼 수 있는 유일한 사람이다. 열두 살에 거부한 그 문을, 다시 열기만 하면 된다.”']);
+  n.push([null,'그녀가 창살 사이로 손을 뻗어, 내 손을 잡았다. 뜨거웠다.']);
+  n.push(['said','“신을 받는 데엔 앓음이 필요하다. 눈을 뜨고 또 떠서, 네 안의 것을 끝까지 앓아라. 그래야 나례의 밤, 산군 앞에 설 수 있다.”']);
+  n.push(['sp','신을 받는다 — 도성을 구하고, 사람이기를 그친다. 무병을 끝까지 끌어올려야만, 그 문턱에 설 자격이 생긴다.']);
+  show(n,[{k:'물러난다',t:'옥을 나선다.',f:day}]);
+}
+function gukmuVow(){
+  S.gukSeed=true;
+  show([['hd','성수청 — 끌려가기 전'],
+    [null,'오라를 채우는 손을, 국무당이 가만히 내려다보았다. 저항하지 않았다.'],
+    ['said','“하나만 일러두마. 굿을 멈춘다고 이 일이 끝나지 않는다. 이미 죽은 것들이, 다음을 부른다.”'],
+    ['said','“멈추는 길은 하나뿐이다. 끊긴 제사를 되살리는 것. 그리고 그 제관은 — <b>신을 받은 자</b>여야 한다.”'],
+    [null,'그녀가 나를 똑바로 보았다. 열두 살에 거부한 그것을, 이 여자는 처음부터 알고 있었다.'],
+    ['said','“네가 받으면, 내가 옥에서라도 일러주마. 어떻게 올리는지. …생각이 서거든, 의금부로 나를 찾아오너라.”'],
+    ['sp','신을 받는다. 사람이기를 그친다. — 그 말이 오래 남았다.']
+  ],[{k:'끌고 간다',t:'국무당을 의금부에 넘긴다.',f:turn2}]);
+}
+function turn2(){
+  S.act2=true; S.rank=0;
+  save('day');
+  show([
+    ['hd','전환 — 그날 밤'],
+    [null,'국무당을 의금부에 넘겼다. 굿 장부가 증거다. 사람을 제웅으로 바꿔치기한 손을, 마침내 잡았다.'],
+    [null,'종사관이 처음으로 웃었다. 나를 거둔 뒤 십이 년 만에.'],
+    ['said','“끝났다. 잘했다. 네 아비 얘기는… 이제 아무도 못 꺼낸다.”'],
+    ['sp','끝났다고 했다. 나도 그렇게 믿고 싶었다.'],
+    [null,'그날 밤, <b>일곱 번째 제웅</b>이 수구문 밖에서 발견됐다.'],
+    ['mind','국무당은 옥에 있다. 굿은 멈췄다. 손은 묶였다. 그런데 사람이 또 사라졌다.'],
+    ['sp','나는 그제야 알았다. <b>굿을 멈춰도 소용없다.</b> 이미 죽은 자들이, 다음 사람을 부르고 있다. 창귀는 스스로 자란다.'],
+    ['said','“…죽은 자가 죽은 자를 부른다.”'],
+    ['sp','범인은 잡았다. 그러나 사건은 이제 시작이다. — <b>누가 죽였나</b>가 아니라, 이제는 <b>어떻게 멈출 것인가.</b>']
+  ],[{k:'수첩을 다시 편다',t:'무엇을 해야 하는지 정리한다.',f:()=>{
+    show([
+      ['hd','이제 할 일'],
+      ['said','<b>하나 — 죽은 자를 놓아준다.</b> 창귀는 제 대신 살아남은 자의 이름을 들어야 풀려난다. 풀지 못한 밤마다, 그들은 다음 사람을 데려간다.'],
+      ['said','<b>둘 — 이름을 지운 자를 잡는다.</b> 국무당에게 명한 자. 서운관에 있고, 제 이름을 지웠다. 나례 전에 도성을 뜨려 할 것이다.'],
+      ['said','<b>셋 — 굶은 신을 각오한다.</b> 산군은 벌하러 온 게 아니다. 받을 것을 받으러 왔다. 나례의 밤, 그 앞에 서게 될 것이다. 제사를 되살릴 자격 — 신을 받은 자만이 그 앞에 설 수 있다.'],
+      ['sp','그믐 나례까지. 시간은 이제 내 편이 아니다.']
+    ],[{k:'계속',t:'날이 밝기를 기다린다.',f:day}]);
+  }}]);
 }
 
 /* ── 인물 ── */
 function kkokdu(){grill({
-  id:'kkokdu',title:'청계천 다리 밑 — 꼭두쇠',
+  id:'kkokdu',wrong:'“관아 종이 쪼가리요? 그딴 게 우리한테 뭘 해줬소.”',vague:'분노다. 그런데 그 밑에 두려움이 깔려 있다. 이 사내는 무언가를 <b>보았다.</b>',pressT:'“관에서 왔다. 아는 대로 말해라.” 신분을 앞세운다.',softT:'거적 옆에 앉는다. 포교의 옷을 입은 채로, 걸인 옆에.',title:'청계천 다리 밑 — 꼭두쇠',
   open:[[null,'거적 위에 앉은 사내가 나를 올려다본다. 눈이 마르다 못해 갈라져 있다.'],
     ['said','“여섯이오. 여섯이 없어졌는데 관에서 온 건 당신이 처음이오.”'],
     ['sp','그는 나를 믿지 않는다. 믿을 이유가 없다.']],
@@ -320,12 +784,12 @@ function kkokdu(){grill({
     ['said','“...억쇠가 돌아왔소.”'],
     ['said','“사흘 전 밤에. 물지게를 지고 그대로. 나를 부르더군. 이름을 불렀소.”'],
     ['said','“근데 그놈 발이 눈에 안 닿았소. 눈 위를 걷는데, 자국이 없었소.”'],
-    ['sp','죽은 자가 산 자의 이름을 부른다. 창귀다.']],win:['chang']},
-  evid:{text:[[null,'내밀 것이 없다.']]}
+    ['sp','죽은 자가 산 자의 이름을 부른다. 창귀다.']],win:['chang']}
 });}
 
 function seoun(){grill({
-  id:'seoun',title:'서운관 — 관원',
+  brush:[[null,'관원은 붓만 만지작거렸다. 눈을 마주치지 않는다.'],['said','“저는… 하늘만 봅니다. 땅의 일은 모릅니다.”'],['sp','이 사람이 무엇을 두려워하는지부터 알아야, 입이 열린다.']],
+  id:'seoun',wrong:'“저는... 저는 그런 것 모릅니다. 정말 모릅니다.”',vague:'공포다. 나를 두려워하는 게 아니다. 이 자는 <b>나보다 무서운 누군가</b>를 두려워한다.',pressT:'“숨기면 공범이오.” 관복을 세운다.',softT:'“당신 이름은 기록에서 빼드리리다.” 신변을 보장한다.',title:'서운관 — 관원',
   open:[[null,'별을 기록하는 하급 관원. 손이 떨린다. 내가 들어서자 붓을 떨어뜨렸다.'],
     ['said','“저는... 저는 하늘만 봅니다. 땅의 일은 모릅니다.”'],
     ['sp','땅의 일을 모르는 자가 왜 이렇게 떠는가.']],
@@ -347,7 +811,8 @@ function seoun(){grill({
 });}
 
 function hwarin(){grill({
-  id:'hwarin',title:'활인서 — 별제',
+  brush:[[null,'별제는 온화하게 웃으며 차를 권했다. 그리고 아무 말도 하지 않았다.'],['said','“어려운 일 하러 오셨구려. 허나 내가 도울 것이 있겠소?”'],['sp','증좌 없이 이 선한 얼굴을 여는 길은 없다.']],
+  id:'hwarin',wrong:'“글쎄요. 저와는 상관없는 문서로 보입니다만.”',vague:'이 선한 얼굴 밑에, 아주 오래 눌러 담은 <b>죄책감</b>이 있다.',pressT:'“여섯 중 넷이 당신 진료부에 있소. 당신이 골랐소.”',softT:'“어려운 일 하십니다.” 그의 공을 치하한다.',title:'활인서 — 별제',
   open:[[null,'가난한 자를 돌보는 관리. 소매가 닳았고 눈매가 선하다. 이 사람은 나쁜 사람일 리 없다.'],
     ['said','“여섯이나요? 저런... 요즘 유민이 많아 그런 일이 잦습니다.”'],
     ['sp','잦다고 했다. 사람이 사라지는 일을.']],
@@ -359,6 +824,9 @@ function hwarin(){grill({
     ['said','“...아무도 찾지 않을 사람으로 골랐습니다.”'],
     ['said','“연고 없고, 병들고, 없어져도 아무도 안 찾을 사람. 그게 기준이었습니다. 제가 정한 기준이 아닙니다. 제가 따른 기준입니다.”'],
     [null,'그가 진료부를 내민다. 넘기는 손이 떨린다.'],
+    [null,'물지게꾼 억쇠의 이름 옆에, 다른 이름이 나란히 적혀 있다. <b>판윤댁 셋째 아들.</b> 그 아래 붉은 글씨로 — <i>사경을 헤매다 그믐밤에 소생함.</i>'],
+    ['said','“…그 댁 도령은 살았습니다. 억쇠가 없어진 바로 그 밤에.”'],
+    ['sp','짝이다. 하나가 죽고 하나가 살았다. 억쇠 대신 살아난 자의 이름을, 이제 안다.'],
     ['sp','이 사람은 악인이 아니다. 그래서 더 나쁘다.']],win:['jinryo'],mu:8},
   soft:{text:[['said','“어려운 일 하십니다. 도와드리고 싶습니다.”'],
     ['said','“고맙습니다. 그런데 진료부는 관례상 내드리기 어렵습니다.”'],
@@ -367,11 +835,13 @@ function hwarin(){grill({
   evid:{text:[['said','“여섯 중 넷이 당신 진료부에 있소.”'],
     [null,'그의 손이 멎었다.'],
     ['said','“...아무도 찾지 않을 사람으로 골랐습니다. 그게 기준이었습니다.”'],
-    [null,'그가 진료부를 내민다.']],win:['jinryo'],mu:6}
+    [null,'그가 진료부를 내민다. 억쇠의 이름 옆에 다른 이름이 나란히 있다. <b>판윤댁 셋째 아들</b> — <i>그믐밤에 소생함.</i>'],
+    ['sp','하나가 죽고 하나가 살았다. 억쇠 대신 살아난 자의 이름을, 이제 안다.']],win:['jinryo'],mu:6}
 });}
 
 function gyusu(){grill({
-  id:'gyusu',title:'종친가 — 규수',
+  brush:[[null,'곁문에서 하인이 막아섰다. 규수는 병중이라 아무도 못 만난다 한다.'],['sp','이 집이 무엇을 감췄는지 손에 쥐기 전에는, 문턱도 넘지 못한다.']],
+  id:'gyusu',wrong:'그녀는 그것을 오래 들여다보다가 고개를 저었다. “모르는 것입니다.”',vague:'살아 있다는 것이 이 아이에게는 <b>벌</b>이다. 무언가를 알고 있다.',pressT:'“누가 대신 죽었소.” 정면으로 찌른다.',softT:'“아가씨 잘못이 아닙니다.” 곁에 앉는다.',title:'종친가 — 규수',
   open:[[null,'병약한 규수가 이불 밖으로 얼굴만 내밀고 있다. 열여덟이나 되었을까.'],
     ['said','“저는 죽을 병이었습니다. 작년 겨울에 죽었어야 했지요.”'],
     ['said','“그런데 살았습니다. 어느 날 아침에, 그냥.”'],
@@ -395,8 +865,37 @@ function gyusu(){grill({
     ['said','“어머니가 무당에게서 받아 온 것입니다. 제 사주 옆에... 모르는 사람의 사주가 있었습니다.”']],win:['saju'],mu:4}
 });}
 
+function uigeum(){grill({
+  brush:[[null,'의금부 도사는 나를 잡아넣을 듯 노려보았다.'],['said','“역적의 자식이 무슨 낯으로 이 문을 넘느냐. 증좌도 없이.”'],['sp','정황을 쥐기 전에 이자를 건드리는 건, 스스로 오랏줄을 청하는 짓이다.']],
+  id:'uigeum',vague:'이 자는 나를 미워하지 않는다. 오히려 — <b>나를 피하고 있다.</b>',
+  pressT:'“당신도 한패였소.” 왕의 칼에게 칼을 겨눈다.',
+  softT:'“그날 일을 묻고 싶습니다.” 고개를 숙인다.',
+  title:'의금부 — 도사',
+  wrong:'“그래서? 그것이 네 아비를 살려내느냐.”',
+  open:[[null,'십이 년 전, 아버지를 국문한 자다. 그 목소리를 나는 아직도 밤마다 듣는다.'],
+    ['said','“역적의 자식이 포교 노릇을 한다더니. 그 꼴로 여긴 왜 왔느냐.”'],
+    ['sp','이 자를 심문할 수는 없다. 이 자는 심문하는 쪽이다.']],
+  mind:'나는 그날 밤 <b>잘못된 자를 국문했다.</b> 진짜는 옆에서 붓을 들고 있었고, 나는 그자의 말대로 적었다. 그것을 아는 자는 이제 나뿐이다.',
+  false_:'네 아비는 끝까지 울지 않았다. 너도 그러하겠지. 너를 여기 눕혀보면 알겠구나.',
+  needClue:'chingching',
+  press:{text:[['said','“한패라... 좋다. 그 입으로 무엇을 더 지껄이는지 보자.”'],
+    [null,'그날로 나는 의금부 뜰에 엎어졌다. 사흘 만에 풀려났을 때, 그의 방은 비어 있었다.'],
+    ['sp','왕의 칼에게 칼을 겨눴다. 칼은 겨눈 자를 벤다.']],lose:'아버지의 유고는 그와 함께 사라졌다',mu:14},
+  soft:{text:[['said','“그날 일? 그날 일은 끝났다. 네 아비는 죄인이었고, 나는 관원이었다.”'],
+    [null,'그는 붓을 들었다. 나를 없는 사람 취급했다.'],
+    ['sp','고개를 숙여도 열리지 않는다. 이 자는 뉘우침을 구걸받고 싶어 하지 않는다.']],mu:4},
+  evid:{text:[[null,'참칭의 증거를 그 앞에 놓았다. 별을 세는 자. 이름을 지운 자.'],
+    [null,'그는 아주 오래 그것을 보았다. 붓을 놓았다.'],
+    ['said','“...그날 밤, 네 아비 옆에서 조서를 불러준 자가 있었다.”'],
+    ['said','“나는 그자가 부르는 대로 적었다. 그자의 이름은 조서 어디에도 없다.”'],
+    [null,'그가 궤에서 두꺼운 종이 뭉치를 꺼낸다. 아버지의 필체다.'],
+    ['said','“네 아비는 이걸 남기고 죽었다. 나는 십이 년을 태우지 못했다.”'],
+    ['sp','아버지는 대살을 만든 사람이었다. 그리고 멈추려다 죽은 사람이었다. 둘 다 참이다.']],win:['yugo'],mu:10}
+});}
+
 function gukmu(){grill({
-  id:'gukmu',title:'성수청 — 국무당',
+  brush:[[null,'국무당은 나를 보더니 등을 돌렸다.'],['said','“아직이다. 너는 아직 아무것도 모른다. 알거든 다시 오너라.”'],['sp','대살의 물증 없이는, 그녀는 한 마디도 하지 않는다.']],
+  id:'gukmu',wrong:'“애송이. 그건 아무것도 아니다. 내가 무엇을 두려워할 것 같으냐.”',vague:'아무것도 감추지 않는다. 이 여자는 <b>나를 기다리고 있었다.</b>',pressT:'“무녀의 죄는 국문으로 갚는 법이오.” 오라를 꺼낸다.',softT:'그녀의 말을 끝까지 듣는다. 신을 받으라는 그 말을.',title:'성수청 — 국무당',
   open:[[null,'없는 관청의 없는 사람. 나라가 무속을 금하고, 그 나라가 뒤로 부리는 무당.'],
     [null,'그녀는 나를 보자마자 웃었다.'],
     ['said','“왔구나. 언젠가 올 줄 알았다.”'],
@@ -420,74 +919,246 @@ function gukmu(){grill({
     ['sp','하늘을 읽는 자리. 서운관.']],win:['jangbu'],mu:8}
 });}
 
+function dokPool(){
+  return [
+    {id:'q1',ok:()=>true,q:'사람들은 어디로 갔는가?',
+     a:'“산으로. 네 발 달린 것의 배 속으로.”',
+     r:'참말이다. 그리고 이미 짐작하던 것이다.'},
+    {id:'q2',ok:()=>true,q:'누가 제웅을 만들었는가?',
+     a:'“짚을 엮은 손이.”',
+     r:'...물은 것만 답한다더니, 정말로 그렇다.'},
+    {id:'q3',ok:()=>has('chang'),q:'죽은 자를 어떻게 놓아주는가?',
+     a:'“제 대신 살아남은 자의 이름을 들려주면 된다. 그뿐이다.”',
+     r:'이름. 이름을 찾아 주면 놓여난다. — 이제 무엇을 해야 하는지 안다.'},
+    {id:'q4',ok:()=>has('ilji'),q:'왜 호랑이가 도성에 드는가?',
+     a:'“굶어서. 산에 절하던 것을 나라가 그만두었다. 아무도 먹이지 않는다.”',
+     r:'산군이다. 굶은 신은 사람을 먹는다.'},
+    {id:'q5',ok:()=>has('jinryo'),q:'누가 그들을 골랐는가?',
+     a:'“붓을 쥔 손이.”',
+     r:'붓을 쥔 손은 이 도성에 천 개다. 헛물을 켰다.'},
+    {id:'q6',ok:()=>has('saju'),q:'무당에게 명한 자는 어느 관청에 있는가?',
+     a:'“하늘을 보는 곳에. 별을 세는 곳에. 그자는 이름이 없다. 스스로 지웠으니.”',
+     r:'서운관. 이름을 지운 자. — 손에 잡혔다.',give:'chingching'},
+    {id:'q8',ok:()=>has('jeung'),q:'이 사주를 적은 손은 누구의 손인가?',
+     a:'“죽은 손이. 그런데 죽은 손이 쓴 것을 산 손이 베꼈다.”',
+     r:'죽은 손. — 아버지의 필체를 누군가 <b>베끼고 있다.</b> 그럴 리 없다고 열두 번 되뇌었는데.'},
+    {id:'q7',ok:()=>S.met&&has('chang'),q:'최노인 대신 살아남은 자는 누구인가?',
+     a:'“별을 세는 자. 제 이름을 지우고 남의 이름을 쓰는 자.”',
+     r:'육혼에게 돌려줄 이름을 얻었다. 그리고 그자가 누구인지도.',give:'chingching',name:3},
+    {id:'q9',ok:()=>has('chang')&&!knows(1),q:'억쇠 대신 살아남은 자는 누구인가?',
+     a:'“높은 집 셋째가. 죽을 것이 살고, 살 것이 죽었다.”',
+     r:'판윤댁 셋째 아들. — 억쇠의 목숨으로 살아난 자다. 굴각에게 돌려줄 이름이다.',name:1},
+    {id:'q10',ok:()=>has('chang')&&!knows(2),q:'분이 대신 살아남은 자는 누구인가?',
+     a:'“대문 높은 집 딸이. 하룻밤에 병이 걷힌 아이가.”',
+     r:'종친가 규수 이씨. — 이올에게 돌려줄 이름이다.',name:2},
+    {id:'q11',ok:()=>S.act2&&has('chingching'),q:'이름 없는 자를 어떻게 붙잡는가?',
+     a:'“이름을 지운 자에게도 손버릇은 남는다. 죽은 이가 남긴 글과 나란히 놓아 보아라.”',
+     r:'아버지의 유고. 필체를 맞대면 그자가 드러난다. — 의금부 도사가 그것을 쥐고 있다.'},
+    {id:'q12',ok:()=>S.act2,q:'굶은 신을 어떻게 물리는가?',
+     a:'“먹이면 된다. 끊긴 상을 다시 차리면 된다. 허나 상을 차릴 자가 있어야지.”',
+     r:'제사를 되살려야 한다. 그리고 그 제관은 <b>신을 받은 자</b>여야 한다. — 신을 받으려면, 내 눈을 끝까지 열어야 한다.'},
+    {id:'q13',ok:()=>S.act2&&S.mu<60,q:'신을 받으려면 무엇이 필요한가?',
+     a:'“앓음이. 네 몸이 다 헐 때까지 눈을 뜨고 또 떠라. 반쯤 앓은 자는 문턱을 못 넘는다.”',
+     r:'무병을 더 깊이 끌어올려야 한다. 몸을 아끼면, 나례의 밤에 신을 받을 자격이 없다.'},
+  ].filter(x=>x.ok()&&!S.asked.has(x.id));
+}
+/* 도깨비의 변덕 — 만날 때마다 기분이 다르다 */
+const DOK_MOOD=[
+  {id:'genial',intro:['다리 밑에서 파란 불이 느긋하게 흔들린다. 기분이 좋은 모양이다.'],
+   ask:'“오늘은 후하다. 하나 묻거라. 참말로 답하마.”',
+   note:'물은 것만 답한다. 모르는 것은 물을 수조차 없다.',price:null},
+  {id:'greedy',intro:['파란 불이 바짝 다가온다. 굶은 기색이다.'],
+   ask:'“공짜는 없다. 답을 원하거든, <b>네가 가장 최근에 들은 비밀</b> 하나를 다오.”',
+   note:'대가로 무언가를 내주어야 한다. — 아는 것이 줄어들 수도 있다.',
+   price:()=>{ // 대가는 무병 +6. 단서를 실제로 뺏지는 않는다 — 뺏으면 사슬이 끊겨 소프트락이 난다
+     mu(6); return '비밀 하나를 게워냈다. 머리가 아뜩하다.';}},
+  {id:'trickster',intro:['파란 불이 둘로 갈라졌다가 다시 하나가 된다. 장난기가 서렸다.'],
+   ask:'“물어보아라. 허나 오늘은… <b>비틀어</b> 답할 수도 있으니, 잘 새겨듣거라.”',
+   note:'심술이 났다. 참말이되, 곧이곧대로 알아듣기 어려울 수 있다.',price:null,twist:true},
+];
+function dokMood(){
+  // 2막에선 굶주림/심술 비중이 커진다
+  const pool = S.act2 ? ['greedy','trickster','greedy','genial'] : ['genial','trickster','greedy'];
+  const id = pool[(S.day*7 + S.asked.size*3 + (S.act2?5:0)) % pool.length];
+  return DOK_MOOD.find(m=>m.id===id)||DOK_MOOD[0];
+}
 function dokkaebi(){
   S.acts--;
-  const qs=[
-    ['누가 사람들을 죽였는가?','“호랑이가.”','참말이다. 그리고 아무 쓸모가 없다.',false],
-    ['누가 제웅에 사주를 적었는가?','“무당의 손이.”','참말이다. 이미 아는 것이다.',false],
-    ['국무당에게 명한 자는 왕인가?','“아니.”','...그것뿐인가. 물은 것만 답한다더니.',false],
-    ['국무당에게 명한 자는 어느 관청에 있는가?','“하늘을 보는 곳에. 별을 세는 곳에. 그자는 이름이 없다. 스스로 지웠으니.”','서운관. 이름을 지운 자. — 손에 잡혔다.',true]
-  ];
-  show([['hd','수표교 아래 — 도깨비'],
-    [null,'다리 밑에서 불빛 하나가 흔들린다. 파란 불이다.'],
+  const pool=dokPool();
+  const r0=road();
+  const m=dokMood();
+  const n=[['hd','수표교 아래 — 도깨비'],
+    [null,'수표교 아래로 내려갔다. 물은 얼었고, 얼음 밑에서 무언가 흐르는 소리가 난다.'],
+    ...(r0?[['sp',r0]]:[]),
+    ...m.intro.map(x=>[null,x]),
     ['said','“메밀묵.”'],
     [null,'메밀묵 한 그릇을 놓자 사라졌다. 그릇만 남았다.'],
-    ['said','“하나만 묻거라. 나는 거짓을 못 한다. 대신 물은 것만 답한다.”'],
-    ['sp','물은 것만 답한다. 질문을 잘못하면, 참말을 듣고도 아무것도 얻지 못한다.']
-  ],qs.map(q=>({k:'묻는다',t:q[0],cls:'gold',f:()=>{
-    const n=[['hd','수표교 아래 — 도깨비'],['said',q[1]],['sp',q[2]]];
-    if(q[3]){give('chingching');n.push(['got','손에 넣었다 — 참칭의 증거']);}
-    n.push([null,'파란 불이 꺼졌다. 그릇도 없다.']);
-    show(n,[{k:'계속',t:'다리 위로 올라간다.',f:day}]);
+    ['said',m.ask],
+    ['sp',m.note]];
+  show(n,pool.map(q=>({k:'묻는다',t:q.q,cls:'gold',f:()=>{
+    S.asked.add(q.id);
+    const nn=[['hd','수표교 아래 — 도깨비']];
+    if(m.price){const msg=m.price();nn.push(['sp',msg]);}
+    if(m.twist){
+      nn.push(['said',q.a]);
+      nn.push(['mind','곧이곧대로인 듯도, 비틀어 놓은 듯도 하다. 도깨비의 말은 늘 글자 그대로다. — 곱씹어야 한다.']);
+      nn.push(['sp',q.r]);
+    }else{
+      nn.push(['said',q.a]);
+      nn.push(['sp',q.r]);
+    }
+    if(q.give&&!has(q.give)){give(q.give);nn.push(['got','손에 넣었다 — '+CLUE[q.give]]);}
+    if(q.name){S.names.add(q.name);nn.push(['got',`이름을 얻었다 — ${GHOST[q.name][1]}의 몫`]);}
+    nn.push([null,'파란 불이 꺼졌다. 그릇도 없다.']);
+    show(nn,[{k:'계속',t:'다리 위로 올라간다.',f:day}]);
   }})));
 }
 
 /* ── 밤 ── */
 function night(){
   const g=S.day;
-  if(g>=4){finale();return;}
+  if(g>=5){finale();return;}
   save('night');
   const left=[1,2,3].filter(k=>!S.freed.has(k));
   const c=[];
-  if(S.buja>0)c.push({k:'부적',t:'부적을 태운다. 오늘 밤은 아무것도 보이지 않는다. (무병 −15)',f:()=>{S.buja--;mu(-15);dawn();}});
-  c.push({k:'마주본다',t:'눈을 뜬다. (무병 +18)',cls:'warn',f:()=>{
-    mu(18);
+  // 2막: 창귀를 안 풀고 밤을 넘기면 서열이 오른다
+  const escalate=(next)=>{
+    if(S.act2 && left.length>0){ S.rank=Math.min(3,S.rank+1); return prowl(next); }
+    return next();
+  };
+  c.push({k:'잔다',t:'눈을 감고 잔다. 아무것도 보지 않는다. (무병 −8)',f:()=>{mu(-8);escalate(dawn);}});
+  if(S.buja>0)c.push({k:'부적',t:`부적을 태운다. 깊이 눌러 앉힌다. (무병 −20 · 남은 부적 ${S.buja})`+(S.mu>=60&&S.mu-20<60?' <span style="color:var(--ju-lit)">— 태우면 문턱 아래로 내려간다</span>':''),f:()=>{S.buja--;mu(-20);escalate(dawn);}});
+  c.push({k:'마주본다',t:'눈을 뜬다. 창귀를 마주한다. (무병 +12)',cls:'warn',f:()=>{
+    mu(12);S.met=true;
     const n=[['hd',`${S.day}일차 — 밤`],
-      [null,`눈 위에 ${left.length===1?'하나가':left.length+'이'} 서 있다. 발자국이 없다.`],
+      [null,`눈 위에 ${['','하나가','둘이','셋이'][left.length]} 서 있다. 발자국이 없다.`],
       ['said','“...나리. 제 이름을 아십니까.”'],
       ['said','“누가 저를 대신 살렸는지 알아야 놓여납니다. 그자의 이름을 주십시오.”'],
       ['sp',left.map(k=>`창귀 ${GHOST[k][0]} — ${GHOST[k][1]}`).join('<br>')]];
     const ch=[];
     left.forEach(k=>{
-      if(has(NAMEOF[k]))ch.push({k:'이름을 준다',t:`${GHOST[k][1]}에게 — “${BENE[k]}. 그자가 너 대신 살았다.”`,f:()=>free(k,dawn)});
+      if(knows(k))ch.push({k:'이름을 준다',t:`${GHOST[k][1]}에게 — “${BENE[k]}. 그자가 너 대신 살았다.”`,f:()=>free(k,dawn)});
     });
     ch.push({k:'모른다',t:'“아직 모른다.”',cls:'warn',f:()=>{
-      mu(8);
+      mu(6);
       show([['hd','밤'],
         [null,'그들이 웃었다. 웃는 것 같았다.'],
         ['said','“그럼 나리가 대신 가시겠습니까.”'],
         [null,'뒤에서 뜨거운 숨이 닿는다. 돌아보지 않았다. 돌아보면 끝이다.'],
-        ['sp','겨우 살았다. 그러나 오늘 밤, 도성에서 또 하나가 사라졌다.']
-      ],[{k:'날이 샌다',t:'돌아선다.',f:dawn}]);
+        ['sp','겨우 살았다.']
+      ],[{k:'날이 샌다',t:'돌아선다.',f:()=>escalate(dawn)}]);
     }});
     show(n,ch);
   }});
-  show([['hd',`${S.day}일차 — 밤`],
-    [null,'문밖에 눈이 밟히는 소리가 난다. 눈은 오지 않는데.'],
-    ['sp','눈을 뜨면 보인다. 보면 앓는다. 안 보면 아무것도 얻지 못한다.']
-  ],c);
+  const head=[['hd',`${S.day}일차 — 밤`]];
+  if(S.act2 && left.length>0){
+    head.push([null,`아직 <b>${left.length}</b>이 이름을 못 찾았다. 놓아주지 못한 밤마다, 그들은 다음 사람을 데려간다.`]);
+    if(S.rank>=2)head.push(['sp',`창귀의 서열이 차오른다. <b>${['','굴각','이올','육혼'][S.rank]}</b>까지 왔다. 육혼이 서면 — 도성 안 누구든 이름으로 불려나간다.`]);
+  }else{
+    head.push([null,'문밖에 눈이 밟히는 소리가 난다. 눈은 오지 않는데.']);
+  }
+  head.push(['sp','눈을 뜨면 보인다. 보면 앓는다. 안 보면 아무것도 얻지 못한다.']);
+  show(head,c);
 }
+/* 2막: 놓아주지 못한 밤의 대가 */
+function prowl(next){
+  const who=['','굴각','이올','육혼'][S.rank];
+  const n=[['hd','밤 — 사냥'],
+    [null,`새벽녘, 수구문 밖에서 또 하나의 제웅이 나왔다. <b>${['','여덟','아홉','열'][S.rank]} 번째</b>다.`],
+    ['sp',`풀려나지 못한 것들이 서열을 갖춰간다. 이제 <b>${who}</b>까지 섰다.`]];
+  if(S.rank>=3){
+    n.push(['mind','육혼이 섰다. 이제 이름을 부르는 자다. 아는 이의 이름을. — 그것이 내 이름을 알기 전에, 끝내야 한다.']);
+  }
+  show(n,[{k:'날이 샌다',t:'이 악몽을 끝내야 한다.',f:next}]);
+}
+/* ── [줄기 4] 판사 추격 + 방해 공작 ── */
+const SABO=[
+  {id:'jongsa',hd:'관아 — 압력',text:[
+    [null,'포도청에 돌아오니 종사관의 얼굴이 굳어 있다.'],
+    ['said','“위에서 연통이 왔다. 서운관 판사를 건드리지 말라고. …너 대체 누구를 쑤신 거냐.”'],
+    ['sp','그가 나를 지키려 애쓰고 있다. 그러나 그의 손도 위로 묶여 있다.']],
+    eff:()=>{if(S.acts>0)S.acts--; return '오늘 발품 하나를 빼앗겼다. 불려가 해명하느라.';}},
+  {id:'false',hd:'가짜 실마리',text:[
+    [null,'누군가 관아 문 앞에 서찰 하나를 흘려두었다. 판사가 이미 강을 건넜다는 밀고다.'],
+    ['mind','필체가 지나치게 반듯하다. 급히 도망치는 자가 이렇게 쓰지 않는다. — <b>미끼다.</b>'],
+    ['sp','속아 강가로 달려갔다면 하루를 버렸을 것이다. 넘어가지 않았다.']],
+    eff:()=>{mu(4); return '헛걸음을 참느라 신경을 곤두세웠다.';}},
+  {id:'seal',hd:'봉쇄',text:[
+    [null,'서운관의 문서고에 봉인이 붙었다. “천기누설 방지”라는 명목으로.'],
+    ['said','“판사 어른의 지시입니다.” 문지기가 고개를 숙인다. 그도 알고 있다, 무엇을 감추는지.'],
+    ['sp','증좌를 지우고 있다. 시간이 없다.']],
+    eff:()=>{return '판사가 흔적을 지운다. 이 밤이 지나면 더 어려워진다.';}},
+];
+function saboteur(next){
+  // 아직 안 쓴 방해 하나를 고른다
+  const avail=SABO.filter(x=>!S.sabo.has(x.id));
+  if(!avail.length){next();return;}
+  const s=avail[S.chase % avail.length];
+  S.sabo.add(s.id);
+  const msg=s.eff();
+  show([['hd',s.hd],...s.text,['bad',msg]],[{k:'계속',t:'멈추지 않는다.',f:next}]);
+}
+function pansa(){
+  S.acts--;
+  S.chase++;
+  const step=S.chase;
+  if(step===1){
+    const n=[['hd','서운관 — 추적 (하나)'],
+      [null,'아버지의 유고를 품고 서운관에 들었다. 굿 장부의 필체와, 유고의 필체를 나란히 놓았다.'],
+      ['mind','획을 맺는 버릇. 갈고리처럼 채는 마지막 획. — <b>같은 손이다.</b>'],
+      ['said','“…이 손을, 나는 안다.”'],
+      [null,'판사의 이름은 관원 명부 어디에도 없었다. 그는 십이 년 전, 제 이름을 스스로 지웠다. 아버지를 팔던 그날에.'],
+      ['sp','이제 그가 누구인지 안다. 그러나 아는 것과 잡는 것은 다르다. — 그를 쫓기 시작하면, 그도 나를 쫓을 것이다.']];
+    show(n,[{k:'쫓는다',t:'그의 자취를 따라간다.',f:()=>saboteur(day)}]);
+  }else if(step===2){
+    const n=[['hd','서운관 — 추적 (둘)'],
+      [null,'판사가 나례를 핑계로 도성을 뜰 채비를 하고 있었다. 나졸 몇을 사병처럼 부리면서.'],
+      ['said','“역적의 자식이 또 역적 흉내를 내는구나.” 그가 나를 보고 웃었다. 도망치는 자의 얼굴이 아니었다.'],
+      ['sp','그는 아직 여유롭다. 위가 그를 지키고 있으니. — 그 끈을 끊어야 잡는다.']];
+    show(n,[{k:'더 쫓는다',t:'물러서지 않는다.',f:()=>saboteur(day)}]);
+  }else{
+    // 3보 = 그믐 전 도달 성공. 검거는 종막에서 확정.
+    S.done.add('pansa');
+    const n=[['hd','서운관 — 추적 (셋)'],
+      [null,'마지막으로 그의 방에 들었다. 그는 이미 짐을 꾸린 뒤였다.'],
+      ['said','“네 아비는 멈추려 했다. 그래서 죽었다. 나는 멈추지 않았고, 그래서 살았다.”'],
+      ['said','“…너는 어느 쪽이냐.”'],
+      ['sp','이제 그를 나례의 밤에 붙잡을 수 있다. 유고가 증좌다. 도망칠 구멍은 막혔다.'],
+      ['got','추적 완료 — 나례의 밤, 그를 고발할 수 있다']];
+    show(n,[{k:'물러난다',t:'그믐을 기다린다.',f:day}]);
+  }
+}
+/* 창귀 셋은 놓여나는 순간 제 목소리를 되찾는다. 몸통은 개별, 뼈대(그림자·서열·배지)는 공용.
+   각 배열의 마지막 sp는 got 뒤로 간다 — 원문 free()처럼 sp가 씬을 닫고, 셋의 차이가 그 한 줄에 실린다. */
+const FREED={
+ 1:[[null,'억쇠는 이름을 듣고도 한참을 서 있었다. 손이 무언가를 쥐는 모양으로 굽은 채였다.'],
+    ['said','“판윤댁이면… 아오. 그 댁에 물을 져다 드렸소. 대문이 높아 뒷문으로 돌았지.”'],
+    ['said','“그 댁 도령이 살았소? …그럼 됐소. 물값은 늘 후하게 쳐주던 댁이오.”'],
+    ['sp','그는 셈을 틀리지 않았다. 도성이 사람을 그렇게 셈한다.']],
+ 2:[[null,'분이가 고개를 갸웃했다. 열넷이나 되었을까.'],
+    ['said','“…그것이 어찌 이름입니까. 그 아씨는 살아 계십니까.”'],
+    [null,'살아 있다고 했다.'],
+    ['said','“…그럼 저는 왜 갔습니까.”'],
+    [null,'나는 대답하지 못했다. 그 집 딸의 이름조차 나는 모른다. 아무도 적어두지 않았다.'],
+    ['said','“저는 분이입니다. 아버지가 그리 불렀습니다. …나리도 그리 불러 주십시오.”'],
+    [null,'그 애를 이름으로 불렀다. 두 번 불렀다. 두 번째엔 대답이 없었다.'],
+    ['sp','천한 집 아이에게는 이름이 있고, 귀한 집 딸에게는 성씨만 있다. 무엇을 적을지는 관이 골랐다.']],
+ 3:[[null,'최노인은 오래 서 있었다. 입만 달싹였다.'],
+    ['said','“…서운관이면, 별 보는 데 아니오? 내가 별하고 무슨 척을 졌다고.”'],
+    [null,'농이 아니었다. 정말로 몰라서 묻는 얼굴이었다.'],
+    ['said','“…그 양반은 내 이름도 모르겠구려.”'],
+    [null,'그가 고개를 숙였다. 관원에게 하는 절이었다. 평생 몸에 밴 것이 마지막에 나왔다.'],
+    ['sp','그 양반은 이 사람의 이름을 골랐다. 고르고 나서 잊었다. 나는 그것을 말하지 않았다.']]
+};
 function free(k,then){
   S.freed.add(k);
-  show([['hd','해방'],
-    [null,`${GHOST[k][1]}가 오래도록 서 있었다. 그리고 고개를 숙였다.`],
-    ['said','“...아. 그렇습니까.”'],
+  show([['hd','해방'],...FREED[k].slice(0,-1),
     [null,'눈 위의 그림자가 옅어진다. 산군의 서열 하나가 비었다. 오늘 밤 도성에서 아무도 불려나가지 않는다.'],
     ['got',`창귀 ${GHOST[k][0]} 해방 — ${S.freed.size}/3`],
-    ['sp','수사가 사람을 살렸다.']
+    FREED[k].at(-1)
   ],[{k:'계속',t:'돌아선다.',f:then||dawn}]);
 }
-function dawn(){S.day++;S.acts=2;if(S.day>4){finale();return;}day();}
+function dawn(){S.day++;S.acts=3;if(S.day>5){finale();return;}day();}
 
 /* ── 종막 ── */
 function finale(){
@@ -495,86 +1166,384 @@ function finale(){
     [null,'방상시 탈을 쓴 자들이 궁을 돌며 잡귀를 쫓는다. 나라가 귀신을 없다 하면서, 귀신을 쫓는 밤이다.'],
     [null,'북소리 사이로 발소리가 섞인다. 앞발이 뒷발보다 큰 발소리.'],
     ['sp','산군이 왔다. 그리고 삼차사가 왔다. 명부가 어긋난 도성으로.']];
+  if(S.act2 && S.rank>=3){
+    n.push(['mind','육혼이 내 이름을 부른다. 도성 어디서든 들린다. — 시간이 거의 없다.']);
+  }
   const c=[];
   [1,2,3].forEach(k=>{
-    if(!S.freed.has(k)&&has(NAMEOF[k])){
+    if(!S.freed.has(k)&&knows(k)){
       c.push({k:'이름을 준다',t:`${GHOST[k][1]}에게 — “${BENE[k]}.”`,f:()=>free(k,finale)});
     }
   });
-  n.push([null,'이제 이름을 대야 한다. 누가 이 여섯을 골랐는가.']);
+  n.push([null,'이제 이름을 대야 한다. 이 모든 것을 시작한 자는 누구인가.']);
   const accuse=(who)=>{
-    if(who==='pansa'&&(has('chingching')||(has('jangbu')&&has('ilji')))) return end('right');
-    if(who==='pansa') return end('nofact');
-    return end('wrong');
+    if(who!=='pansa') return end('wrong');
+    // 추적을 마쳤어도, 방해 공작을 너무 방치했으면(증언·증좌가 흔들려) 검거가 무너진다
+    if(S.done.has('pansa')){
+      if(S.pansaEdge>=2) return end('unravel');
+      return reckoning();
+    }
+    if(has('chingching')||has('yugo')) return end('thin');
+    return end('nofact');
   };
-  c.push({k:'고발',t:'국무당이다.',f:()=>accuse('mudang')});
-  c.push({k:'고발',t:'서운관 판사다. 왕의 이름을 훔친 자.',f:()=>accuse('pansa')});
+  c.push({k:'고발',t:'국무당이다. 굿을 집전한 자.',f:()=>accuse('mudang')});
+  c.push({k:'고발',t:'서운관 판사다. 이름을 지운 자.',f:()=>accuse('pansa')});
   c.push({k:'침묵',t:'아무 말도 하지 않는다. 덮는다.',f:()=>end('silent')});
   show(n,c);
 }
 
-function end(kind){
-  if(kind==='silent')return final('관인 官人',[
-    [null,'나는 아무 말도 하지 않았다. 사건은 국무당 하나로 덮였고, 나는 포도부장이 되었다.'],
-    [null,'그해 겨울 도성에서 열아홉이 사라졌다. 아무도 찾지 않는 사람들이었다.'],
-    ['sp','아무도 나를 탓하지 않았다. 그것이 가장 견디기 어려웠다.']
+/* ── 진엔딩 전용 연출 (아들 子) ── */
+function trueEnd(){
+  show([['hd','나례의 밤 — 받음'],
+    [null,'무릎이 눈에 박혔다. 열두 살에 닫아건 문을, 서른이 되어 내 손으로 열었다.'],
+    [null,'열이 등뼈를 타고 올라왔다. 십이 년을 앓아온 것이 이제야 제자리를 찾아 앉는다. 아팠던 것이 아니라, <b>갈 곳이 없었던 것이다.</b>'],
+    ['said','“…받겠습니다.”'],
+    [null,'눈이 뜨였다. 이번엔 감을 수 없는 눈이다. 도성의 모든 죽은 것이 한꺼번에 보였고, 나는 비명을 지르지 않았다.'],
+    ['sp','한서린이라는 사람이 거기서 끝났다.']
+  ],[{k:'제상을 차린다',t:'삼십 년 만의 산신제다.',f:trueEnd2}]);
+}
+function trueEnd2(){
+  show([['hd','인왕산 — 산신제'],
+    [null,'아버지의 유고를 폈다. 제문은 그가 쓴 것을 그대로 읽었다. 읽을 사람이 없어 십이 년을 궤 속에 있던 글이다.'],
+    ['said','“산의 주인께 아뢰옵니다. 나라가 이름을 지웠으나, 사람이 잊지 않았사옵니다.”'],
+    [null,'백호가 내려왔다. 갈비뼈가 드러난 몸으로 절을 받고, 오래 나를 보았다.'],
+    ['said','“네 아비도 여기 섰더랬다. 상을 차리지 못하고 갔다.”'],
+    ['said','“…너는 차렸구나.”'],
+    [null,'짐승이 산으로 돌아갔다. 그 뒤로 도성에서 사람이 사라지지 않았다.']
+  ],[{k:'돌아본다',t:'아직 배웅할 것들이 남았다.',f:trueEnd3}]);
+}
+function trueEnd3(){
+  show([['hd','배웅'],
+    [null,'눈밭에 셋이 서 있었다. 이제는 발자국이 있다.'],
+    ['said','“나리. 억쇠올시다. 물지게 지던.”'],
+    [null,'그가 웃었다. 사흘 전 꼭두쇠를 부르던 그 입으로, 이번엔 인사를 했다.'],
+    ['said','“분이도 갑니다. 아버지한테 못 간다고 전해주시오.”'],
+    ['said','“…최가는 할 말이 없소. 그냥, 늦게라도 와줘서 고맙소.”'],
+    [null,'셋이 차례로 옅어졌다. 마지막으로 나를 돌아보며, 처음으로 웃었다.'],
+    ['sp','이름을 찾은 넋은 다음 사람을 부르지 않는다. 여섯의 줄이 여기서 끊겼다.']
+  ],[{k:'끝을 맺는다',t:'남은 것은 하나다.',f:trueEnd4}]);
+}
+function trueEnd4(){
+  final('아들 子',[
+    [null,'서운관 판사는 저잣거리에서 목이 잘렸다. 이름을 지운 자가, 이름이 불리며 죽었다.'],
+    [null,'십이 년 전의 조서가 다시 열렸다. 아버지는 역적에서 지워졌다. 죄인도 충신도 아닌, 그저 <b>한중원</b>이라는 이름으로 돌아왔다.'],
+    ['said','“아버지. 당신이 시작한 것을, 제가 끝냈습니다.”'],
+    ['sp','———'],
+    [null,'그 뒤로 여러 해가 지났다. 나는 인왕산 아래 작은 집에서 산다. 봄가을로 상을 차리고, 이름 없이 죽은 자들의 사주를 적어 태운다.'],
+    [null,'종사관이 이따금 술을 들고 온다. 그는 나를 여전히 이름으로 부른다. 도성에서 그것을 하는 사람은 이제 그 하나다.'],
+    ['sp','나는 무당이 되었다. 사람으로는 다시 돌아가지 못한다. — 그래도 이것이 옳았다. 이것만이 옳았다.']
   ]);
-  if(kind==='wrong')return final('반쪽 半',[
-    [null,'국무당이 목이 잘렸다. 사건은 끝났다고 했다.'],
-    [null,'이레 뒤, 일곱 번째가 사라졌다. 국무당은 이미 죽었는데.'],
-    ['sp','죽은 자들이 산 자를 부르고 있었다. 나는 손 하나를 잘랐을 뿐, 짐승은 살아 있었다.']
-  ]);
-  if(kind==='nofact')return final('무고 誣告',[
-    [null,'나는 서운관 판사를 지목했다. 증거는 없었다.'],
-    [null,'“역적의 자식이 끝내 역적이 되었구나.” 의금부 도사가 말했다. 아버지를 국문했던 그 목소리로.'],
-    ['sp','옳은 이름을 댔다. 그러나 이름만으로는 아무것도 잡을 수 없다.']
-  ]);
-  // right
-  const canReceive=S.mu>=60;
-  const n=[['hd','참칭'],
-    [null,'서운관 판사가 끌려 나왔다. 굿 장부의 필체와 관측 일지의 필체가 같았다.'],
+}
+function reckoning(){
+  const n=[['hd','나례의 밤 — 참칭'],
+    [null,'나례의 혼란 속에서 판사를 붙잡았다. 굿 장부의 필체와, 아버지 유고의 필체가 같았다. 십이 년을 숨은 손이 드러났다.'],
     [null,'그는 아버지의 옛 동무였다. 함께 대살을 만들었고, 아버지를 팔고, 자기 이름을 지우고 살아남았다.'],
     ['said','“네 아비는 멈추려 했다. 그래서 죽었다. 나는 멈추지 않았고, 그래서 살았다.”'],
-    ['sp','그를 잡았다. 그런데 산군은 아직 문밖에 있다. 굶은 신은 사람을 잡아서 배가 부르지 않는다.']];
+    ['sp','그를 잡았다. 사건의 손은 끊었다. 그러나 —'],
+    [null,'북소리가 뚝 끊겼다. 나례의 행렬이 얼어붙었다. 궁문 앞에, <b>흰 것</b>이 서 있다.'],
+    [null,'집채만 한 백호다. 갈비뼈가 드러나 있다. <b>굶었다.</b> 신이 굶고 있다.'],
+    ['said','“내 산에 도읍을 세운 것이 너희다. 내 제사를 끊은 것도 너희다. 나는 벌하러 온 것이 아니다. 받을 것을 받으러 왔을 뿐이다.”'],
+    ['sp','손을 끊는 것만으로는 부족하다. 굶은 신은, 범인을 잡았다고 물러가지 않는다. 이 앞에서는 겁도 꾀도 통하지 않는다.']];
+  const c=[
+    {k:'벤다',t:'환도를 뽑는다. 짐승은 짐승일 뿐이다.',cls:'warn',f:()=>end('slain')},
+    {k:'무릎을 꿇는다',t:'“끊긴 제사를 되살리겠습니다.” 신 앞에 무릎을 꿇는다.',cls:'gold',f:vowScene}
+  ];
+  show(n,c);
+}
+function vowScene(){
+  const canReceive=S.mu>=60;
+  const n=[['hd','나례의 밤 — 제관'],
+    [null,'나는 눈 위에 무릎을 꿇었다. 포교의 옷을 입은 채로, 온 도성이 지켜보는 앞에서, 짐승 앞에.'],
+    ['said','“누가 제관이 되느냐. 나라가 지운 신 앞에, 누가 나라 대신 무릎을 꿇느냐.”'],
+    ['sp','제사를 올리려면 제관이 있어야 한다. 신을 받은 자여야 한다. — 나는 평생 그것을 거부해 왔다. 양반이 무당이 될 수는 없으니.']];
   const c=[];
   if(canReceive){
-    n.push([null,'국무당이 옥에서 마지막 말을 보냈다. “제사를 되살려라. 제관은 신을 받은 자여야 한다.”']);
-    c.push({k:'받는다',t:'무릎을 꿇는다. 신을 받는다.',cls:'warn',f:()=>{
-      const perfect=S.freed.size>=3;
-      if(perfect)return final('아들 子',[
-        [null,'나는 인왕산에 올라 제상을 차렸다. 삼십 년 만의 산신제였다.'],
-        [null,'백호가 내려와 절을 받았다. 도성에서 다시는 사람이 사라지지 않았다.'],
-        [null,'창귀 셋이 모두 이름을 찾아 떠났다. 억쇠도, 분이도, 최노인도.'],
-        ['said','“아버지. 제가 갚았습니다.”'],
-        ['sp','나는 무당이 되었다. 사람으로는 다시 돌아가지 못했다. 그래도 이것이 옳았다.']
-      ]);
+    n.push(['said','“너는 이미 반쯤 이쪽이다. 눈을 보면 안다.”']);
+    // [D] 갈림을 플레이어에게 보이게 — 지금까지 이룬 것을 되짚는다
+    const allFreed=S.freed.size>=3;
+    const hasYugo=has('yugo');
+    n.push(['sp','받기 전에, 나는 내가 걸어온 길을 돌아보았다.']);
+    n.push([allFreed?'got':'bad', allFreed
+      ? `창귀 셋을 모두 놓아주었다. 억쇠도, 분이도, 최노인도 이름을 찾았다.`
+      : `아직 이름을 찾지 못한 창귀가 ${3-S.freed.size} 있다. 그들은 여태 눈 위를 걷는다.`]);
+    n.push([hasYugo?'got':'bad', hasYugo
+      ? `아버지의 유고가 품 안에 있다. 그가 무엇을 뉘우쳤는지, 나는 안다.`
+      : `아버지의 유고는 끝내 손에 넣지 못했다. 그가 무엇을 남기려 했는지, 나는 모른다.`]);
+    n.push(['sp','받으면 도성을 구한다. 그러나 사람으로는 돌아오지 못한다. 그 문턱이, 지금 내 앞에 있다.']);
+    c.push({k:'받는다',t:'신을 받는다. 사람이기를 그친다.',cls:'warn',f:()=>{
+      const perfect=allFreed&&hasYugo;
+      if(perfect)return trueEnd();
       return final('제관 祭官',[
-        [null,'나는 인왕산에 올라 제상을 차렸다. 백호가 내려와 절을 받았다. 도성은 구했다.'],
-        [null,'그러나 이름을 찾지 못한 창귀들은 아직 눈 위를 걷는다. 내가 늦었기 때문이다.'],
+        [null,'나는 그 자리에서 신을 받았다. 백호가 절을 받고 물러갔다. 도성은 구했다.'],
+        allFreed
+          ? [null,'창귀들은 떠났다. 그러나 나는 아버지의 유고를 끝내 손에 넣지 못한 채, 그가 무엇을 뉘우쳤는지 모르고 그 자리를 대신했다.']
+          : [null,'그러나 이름을 찾지 못한 창귀들은 아직 눈 위를 걷는다. 내가 늦었기 때문이다.'],
         ['sp','나는 무당이 되었다. 사람으로는 돌아가지 못한다. 그리고 아직도 밤마다 누가 내 이름을 부른다.']
       ]);
     }});
   }else{
-    n.push(['sp','국무당이 무어라 전했다는데, 나는 듣지 못했다. 내 눈은 이미 닫혀 있었다.']);
+    n.push(['said','“허나 너는 아직 멀었다. 신을 받기엔 네 안의 문이 닫혀 있다.”']);
+    n.push(['sp','신안을 더 썼어야 했다. 더 앓았어야 했다. 자격 없는 자의 약속은, 짐승 앞에서 아무 힘이 없다.']);
   }
-  c.push({k:'거부',t:'끝까지 사람으로 남는다.',f:()=>final('인간 人間',[
-    [null,'나는 신을 받지 않았다. 양반의 자식으로, 사람으로 죽었다.'],
+  c.push({k:'끝까지 사람으로',t:'신을 받지 않는다. 사람으로 남는다.',f:()=>final('인간 人間',[
+    [null,'나는 무릎을 꿇었으나, 끝내 신을 받지는 않았다. 양반의 자식으로, 사람으로 남았다.'],
     [null,'진실은 모두 밝혀졌다. 서운관 판사는 저잣거리에서 목이 잘렸다.'],
-    [null,'그리고 그믐 밤, 산군이 도성에 들었다. 아무것도 멈추지 않았다.'],
-    ['sp','옳은 일을 다 했다. 그런데 아무도 살리지 못했다.']
+    [null,'그러나 제관 없는 제사는 올릴 수 없었다. 그믐 밤, 산군이 도성에 들었다.'],
+    ['sp','옳은 일을 다 했다. 그런데 아무도 살리지 못했다. — 옳음과 구함은, 같은 것이 아니었다.']
   ])});
   show(n,c);
 }
 
-function final(title,body){
-  wipe();
-  const stat=`무병 ${S.mu} · 해방한 창귀 ${S.freed.size}/3 · 단서 ${S.clues.size}/7 · 잃은 문 ${S.lost.size}`;
-  show([['hd','종막 — '+title],...body,
-    ['sp','———'],
-    ['got',stat]
-  ],[{k:'다시',t:'처음부터 다시 한다.',f:reset}]);
+function end(kind){
+  if(kind==='silent'){
+    const body=[
+      [null,'나는 아무 말도 하지 않았다. 사건은 국무당 하나로 덮였고, 나는 포도부장이 되었다.']];
+    if(S.freed.size>=3)
+      body.push([null,'내가 놓아준 세 넋만은 돌아오지 않았다. 억쇠도, 분이도, 최노인도. 그것이 내가 한 유일한 옳은 일이었고, 아무도 그것을 알지 못한다.']);
+    else if(S.freed.size>0)
+      body.push([null,`내가 이름을 찾아준 ${S.freed.size} 넋은 떠났다. 그러나 나머지는 여태 눈 위를 걷는다. 내가 입을 다물었기 때문이다.`]);
+    body.push([null, S.rank>=3
+      ? '육혼이 도성을 걸었다. 그해 겨울, 이름이 불린 자가 서른을 넘었다. 아무도 세지 않았다.'
+      : '그해 겨울 도성에서 열아홉이 사라졌다. 아무도 찾지 않는 사람들이었다.']);
+    body.push(['sp','아무도 나를 탓하지 않았다. 그것이 가장 견디기 어려웠다.']);
+    return final('관인 官人',body);
+  }
+  if(kind==='wrong'){
+    const body=[
+      [null,'국무당이 목이 잘렸다. 사건은 끝났다고 했다.'],
+      [null,'며칠 뒤, 또 하나가 사라졌다. 지목한 자는 이미 옥에 있는데.']];
+    if(S.freed.size>=3)
+      body.push([null,'그래도 내가 놓아준 셋은 다시 걷지 않았다. 이름을 찾은 넋은 다음을 부르지 않는다. 나는 짐승을 못 잡았으나, 그 셋만은 건졌다.']);
+    else if(S.freed.size>0)
+      body.push([null,`이름을 찾아준 ${S.freed.size} 넋만이 걸음을 멈췄다. 나머지는 새 사람을 데리고 눈 속으로 사라졌다.`]);
+    body.push(['sp','죽은 자들이 산 자를 부르고 있었다. 나는 손 하나를 잘랐을 뿐, 짐승은 살아 있었다.']);
+    return final('반쪽 半',body);
+  }
+  if(kind==='nofact')return final('무고 誣告',[
+    [null,'나는 서운관 판사를 지목했다. 증거는 없었다. 유고도, 대조도.'],
+    [null,'“역적의 자식이 끝내 역적이 되었구나.” 의금부 도사가 말했다. 아버지를 국문했던 그 목소리로.'],
+    ['sp','옳은 이름을 댔다. 그러나 이름만으로는 아무것도 잡을 수 없다.']
+  ]);
+  if(kind==='unravel')return final('무고 誣告',[
+    [null,'나는 판사를 지목했다. 유고를 들이밀고, 필체를 짚었다. 다 맞는 말이었다.'],
+    [null,'허나 내가 흘려보낸 것들이 발목을 잡았다. 번복된 증언, 지워진 문서. 그가 뒤에서 갈아엎은 자리를, 나는 제때 되돌리지 않았다.'],
+    ['said','“증좌가 이리 성기니, 무고가 아니고 무엇이냐.” 도사가 서류를 덮었다.'],
+    ['sp','옳은 자를 짚었으나, 그를 묶을 끈을 스스로 놓아버렸다. 방치한 하루하루가, 여기서 값을 치른다.']
+  ]);
+  if(kind==='thin')return final('무고 誣告',[
+    [null,'나는 판사를 지목했다. 증좌는 있었으나, 그를 끝까지 쫓지 않았다. 그는 그 틈에 도성을 떴다.'],
+    ['said','“쫓다 만 자가 무슨 수로 나를 잡느냐.” 그의 빈 방에 그 말만 남아 있었다.'],
+    ['sp','반쯤 쥔 진실은, 쥐지 않은 것과 다르지 않았다.']
+  ]);
+  if(kind==='slain')return final('사냥꾼 獵',[
+    [null,'나는 환도를 뽑아 짐승에게 겨눴다. 백호가 나를 내려다보았다. 웃는 것 같았다.'],
+    ['said','“쇠붙이로 신을 벤 자는 없다. 네 아비도 그리 믿었지.”'],
+    [null,'앞발이 움직이기도 전에, 나는 눈밭에 쓰러졌다. 판사는 잡았으나 제사는 올리지 못했고, 산군은 그 밤 도성을 삼켰다.'],
+    ['sp','손은 끊었으나, 굶주림은 끊지 못했다. 힘으로 신을 이긴 자는, 없다.']
+  ]);
 }
 
+
+/* ── 엔딩 도감 ── */
+const ENDINGS=[
+  {key:'아들 子',  tier:'진(眞)엔딩', hint:'창귀 셋을 모두 놓아주고, 판사를 끝까지 쫓아 잡고, 유고를 손에 넣고, 나례의 밤 산군 앞에 무릎 꿇어 신을 받는다'},
+  {key:'제관 祭官', tier:'구원',      hint:'판사를 잡고 나례의 밤 신을 받아 도성을 구하지만, 무언가 하나가 모자라 온전히 갚지 못한다'},
+  {key:'인간 人間', tier:'비극',      hint:'끝까지 사람으로 남아 진실을 밝히지만, 아무도 구하지 못한다'},
+  {key:'관인 官人', tier:'침묵',      hint:'덮는다. 출세하고, 도성이 대신 값을 치른다'},
+  {key:'반쪽 半',   tier:'미완',      hint:'엉뚱한 자를 잡는다. 짐승은 살아남는다'},
+  {key:'무고 誣告', tier:'파국',      hint:'증거 없이 지목한다. 역적의 자식이 역적이 된다'},
+  {key:'사냥꾼 獵',  tier:'오만',      hint:'나례의 밤, 산군을 칼로 베려 든다. 힘으로 신을 이긴 자는 없다'},
+  {key:'창귀 倀鬼', tier:'파멸',      hint:'무병이 넘친다. 쫓던 것이 되어버린다'},
+];
+const EKEY='changgwirok.endings.v1';
+function seen(){try{return new Set(JSON.parse(localStorage.getItem(EKEY)||'[]'));}catch(e){return new Set();}}
+function markSeen(key){if(!CANSAVE)return;try{const s=seen();s.add(key);localStorage.setItem(EKEY,JSON.stringify([...s]));}catch(e){}}
+
+function final(title,body){
+  wipe();
+  markSeen(title);
+  show([['hd','종막 — '+title],...body],[
+    {k:'기록',t:'이 결말의 기록을 본다.',f:()=>record(title)},
+    {k:'다시',t:'처음부터 다시 한다.',f:reset}
+  ]);
+}
+function record(title){
+  const idx=ENDINGS.findIndex(e=>e.key===title);
+  const meta=ENDINGS[idx]||{tier:''};
+  const got=seen();
+  const stat=`무병 ${S.mu} · 해방한 창귀 ${S.freed.size}/3 · 단서 ${S.clues.size}/8`;
+  show([['hd','기록 — '+title],
+    ['got',`【${meta.tier}】 ${idx+1}번째 엔딩 · ${title}`],
+    ['sp',`발견한 결말 ${got.size} / ${ENDINGS.length}`],
+    ['got',stat]
+  ],[
+    {k:'엔딩 도감',t:`지금까지 본 결말을 살펴본다. (${got.size}/${ENDINGS.length})`,f:codex},
+    {k:'다시',t:'처음부터 다시 한다.',f:reset}
+  ]);
+}
+function codex(){
+  const got=seen();
+  let h='<h3>엔딩 도감</h3>';
+  h+=`<p class="cnt">${got.size} / ${ENDINGS.length} 발견</p>`;
+  h+='<ul>';
+  ENDINGS.forEach((e,i)=>{
+    const has_=got.has(e.key);
+    h+=`<li class="${has_?'on':'off'}"><span class="t">${i+1}. ${has_?e.key:'??? ???'}</span>`+
+       `<span class="tier">${e.tier}</span>`+
+       `<span class="hint">${has_?e.hint:'— 아직 보지 못한 결말'}</span></li>`;
+  });
+  h+='</ul>';
+  if(got.size===ENDINGS.length)h+='<p class="clr">모든 결말을 보았다.<br>표지에 <b>대살록 代殺錄</b>이 열렸다 — 십이 년 전, 아버지의 이야기.</p>';
+  h+='<button id="cclose">닫는다</button>';
+  E('nsheet').innerHTML=h;
+  E('note').hidden=false;
+  E('cclose').onclick=()=>{E('note').hidden=true;};
+}
+
+/* ── 프리퀄 「대살록 代殺錄」 — 모든 엔딩 수집 시 해금 ── */
+function pqStart(){
+  PQ=true; PQNAME=false;
+  show([['hd','대살록 代殺錄'],
+    [null,'십이 년 전. 역병이 돌던 해다.'],
+    [null,'당신은 <b>한중원</b>. 서운관의 젊은 관원이다. 하늘을 읽어 나라에 고하는 것이 일이나, 요즘은 아무도 하늘을 묻지 않는다.'],
+    ['sp','조정은 그해 봄, 산에 올리던 제사를 그만두었다. 괴력난신은 나라의 격에 맞지 않는다 하였다.'],
+    [null,'가을이 오기 전에 도성 밖에서 사람이 죽어 나가기 시작했다. 그리고 겨울에, 내 아들이 앓아누웠다.']
+  ],[{k:'시작한다',t:'그해 겨울로 들어간다.',f:pq1}]);
+}
+function pq1(){
+  show([['hd','겨울 — 아이'],
+    [null,'일곱 살 난 아들이 열에 들떠 헛것을 본다고 했다. 의원은 역병이 아니라 했다. 그러면 무엇이냐 물으니 답을 못 했다.'],
+    ['said','“아버지. 마당에 사람이 서 있어요. 발이 땅에 안 닿아요.”'],
+    ['sp','신병이다. 어미 쪽 핏줄에 무당이 있었다. 받으면 살고, 거부하면 말라 죽는 병.'],
+    [null,'허나 양반의 자식을 무당으로 만들 수는 없었다. 그것은 이 아이의 삶을 끝내는 일이다.'],
+    ['sp','받게 할 수도, 두고 볼 수도 없었다. 나는 세 번째 길을 찾기 시작했다.']
+  ],[{k:'문서를 뒤진다',t:'서운관 서고에는 태워야 할 것들이 남아 있다.',f:pq2}]);
+}
+function pq2(){
+  show([['hd','서고 — 동무'],
+    [null,'서운관 서고 깊은 곳, 고려 적 문서 더미에서 그것을 찾은 건 내가 아니라 <b>그</b>였다.'],
+    [null,'동갑내기 관원. 나와 같은 해에 급제하여, 나와 같은 방에서 별을 셌다. 이름을 여기 적지 않는 것은 — 훗날 그가 제 손으로 지웠기 때문이다.'],
+    ['said','“대살(代殺)이라 하네. 명부에 적힌 이름을 바꿔치기하는 법이야.”'],
+    ['said','“하나가 죽을 자리에 다른 이름을 넣으면, 죽을 자가 살고 넣은 자가 대신 간다더군.”'],
+    [null,'그가 웃으며 말했다. 장난처럼. 우리는 그때 그것이 무엇을 부르는지 몰랐다.'],
+    ['sp','나는 그날 밤 그 문서를 베껴 소매에 넣었다.']
+  ],[
+    {k:'쓴다',t:'아이를 살릴 방법이 이것뿐이다.',f:()=>pq3(true)},
+    {k:'덮는다',t:'해서는 안 되는 일이다.',f:()=>pq3(false)}
+  ]);
+}
+function pq3(chose){
+  const n=[['hd','그믐 — 대살']];
+  if(chose){
+    n.push([null,'나는 망설이지 않았다. 아니, 망설였으나 그 망설임이 아이보다 무겁지 않았다.']);
+  }else{
+    n.push([null,'나는 그것을 덮었다. 사흘을 덮었다.']);
+    n.push([null,'나흘째 밤, 아이의 숨이 끊어질 듯 얕아졌다. 나는 소매에서 그 종이를 꺼냈다.']);
+    n.push(['sp','덮었던 사흘은 아무것도 바꾸지 못했다. 다만 내가 나를 조금 덜 미워하게 했을 뿐이다.']);
+  }
+  n.push([null,'법도는 간명했다. 사주 두 장을 나란히 적는다. 하나는 살릴 자의 것, 하나는 대신 갈 자의 것.']);
+  n.push([null,'대신 갈 자는 <b>아무도 찾지 않을 사람</b>이어야 한다. 찾는 이가 있으면 명부가 어긋난 것이 드러나므로.']);
+  n.push(['said','“수구문 밖에 아이 하나가 얼어 죽어가고 있네. 부모도 없고, 이름도 모르고.”']);
+  n.push(['sp','그가 사주를 적어 왔다. 생년월일시만 적힌 종이. 이름 칸은 비어 있었다.']);
+  show(n,[
+    {k:'이름을 묻는다',t:'“그 아이의 이름이 무엇인가.”',cls:'gold',f:()=>pq4(true)},
+    {k:'묻지 않는다',t:'종이를 받아 든다. 이름은 필요 없다.',f:()=>pq4(false)}
+  ]);
+}
+function pq4(asked){
+  PQNAME=asked;
+  const n=[['hd','그믐 — 바꿔치기']];
+  if(asked){
+    n.push([null,'그가 이상하다는 얼굴로 나를 보았다.']);
+    n.push(['said','“이름은 알아 무엇 하려고. 없어야 편한 것을.”']);
+    n.push([null,'나는 수구문 밖까지 갔다. 거적 밑에서 아이는 이미 말을 못 했다. 옆에 있던 늙은 걸인이 대신 일러주었다.']);
+    n.push(['said','“…간난이라 불렀소. 그냥, 갓난 것이라고.”']);
+    n.push(['sp','간난이. 이름이라 하기도 어려운 이름을, 나는 그날 밤 종이의 빈 칸에 적었다.']);
+  }else{
+    n.push([null,'나는 종이를 받아 들었다. 이름 칸은 비워 둔 채로 사주만 적었다.']);
+    n.push(['sp','모르는 편이 나았다. 이름을 알면 사람이 되고, 사람이 되면 못 할 짓이 되니까.']);
+  }
+  n.push([null,'그믐밤, 우리는 굿을 올렸다. 짚으로 사람을 엮어 아이의 옷을 입히고, 두 장의 사주를 그 배에 넣었다.']);
+  n.push([null,'새벽에 아들의 열이 내렸다. 눈을 뜨고 나를 알아보았다. 나는 마당에 엎드려 울었다.']);
+  n.push(['sp','같은 새벽, 수구문 밖에서 아이 하나가 죽었다. 아무도 찾지 않았다.']);
+  show(n,[{k:'며칠 뒤',t:'아무 일도 없는 듯 겨울이 갔다.',f:pq5}]);
+}
+function pq5(){
+  const n=[['hd','정월 — 눈 위의 것'],
+    [null,'정월 대보름 밤이었다. 마당에 나갔다가 나는 그것을 보았다.'],
+    [null,'작은 것이 눈 위에 서 있었다. <b>발자국이 없었다.</b>']];
+  if(PQNAME){
+    n.push(['said','“…아저씨.”']);
+    n.push([null,'그 아이였다. 간난이. 내가 이름을 적어 넣은 아이.']);
+    n.push(['said','“나는 왜 갔소. 누가 대신 살았소. 그 이름을 알아야 놓여난다는데.”']);
+    n.push(['sp','나는 대답하지 못했다. 대답하면 내 아들의 이름을 말해야 했다.']);
+  }else{
+    n.push([null,'이름도 모르는 것이 나를 올려다보았다. 얼굴이 흐렸다. 내가 이름을 적지 않았기 때문이다.']);
+    n.push(['said','“…나는 누구요.”']);
+    n.push(['sp','이름 없이 죽은 것은 이름 없이 떠돈다. 그 물음에 나는 아무것도 줄 수 없었다.']);
+  }
+  n.push([null,'그것이 산 쪽으로 걸어갔다. 굶은 짐승의 냄새가 났다. — <b>창귀</b>다. 호랑이에게 먹힌 넋이 다음 사람을 부르러 다니는 것.']);
+  n.push(['sp','그제야 알았다. 우리가 연 것은 문이었다. 그리고 문은 한 번 열리면, 스스로 사람을 불러들인다.']);
+  show(n,[{k:'그를 찾아간다',t:'멈춰야 한다.',f:pq6}]);
+}
+function pq6(){
+  show([['hd','대립'],
+    [null,'나는 그를 찾아가 본 것을 말했다. 멈추자고 했다. 이 법을 태우고, 우리가 한 일을 아뢰자고 했다.'],
+    ['said','“아뢰면 자네 아들은 어찌 되는가.”'],
+    [null,'그가 조용히 물었다. 나는 답하지 못했다.'],
+    ['said','“이미 살아난 목숨일세. 되돌릴 수도 없고. 그렇다면 이왕 연 문으로, 살릴 수 있는 자를 더 살리는 게 옳지 않은가.”'],
+    ['said','“판윤댁 셋째가 앓고 있다더군. 그 댁에서 사례가 후하네.”'],
+    ['sp','그때 알았다. 그는 아이를 살리려 이 법을 찾은 것이 아니었다. 나에게 아픈 아들이 있어서, 나를 통해 그것을 시험한 것이다.'],
+    [null,'나는 상소를 쓰기 시작했다. 대살의 법도와, 우리가 한 일과, 내 이름을 모두 적었다.']
+  ],[{k:'올린다',t:'모두 적어 아뢴다. 내 죄까지.',f:pq7}]);
+}
+function pq7(){
+  show([['hd','의금부 — 십이 년 전 그믐'],
+    [null,'상소는 임금께 닿지 않았다. 그가 먼저 닿았다.'],
+    [null,'내가 역모를 꾸몄다 했다. 요망한 술법으로 왕실의 명운을 조작하려 했다고. 증좌로 내 필체가 적힌 대살의 법도가 올라갔다.'],
+    ['said','“내 이름은 여기 없네.”'],
+    [null,'국문 전날 밤, 그가 옥에 찾아와 말했다. 관원 명부에서도, 문서에서도, 그는 이미 자기 이름을 지운 뒤였다.'],
+    ['said','“자네는 멈추려 했지. 그래서 죽는 걸세. 나는 멈추지 않을 거고, 그래서 살 거야.”'],
+    ['sp','나는 그날 밤, 지필을 청해 마지막 글을 썼다.']
+  ],[{k:'쓴다',t:'읽을 사람이 없을 글을.',f:pq8}]);
+}
+function pq8(){
+  const n=[['hd','유고 遺稿'],
+    [null,'— 내가 만든 것을 적는다. 변명하지 않는다.'],
+    [null,'— 대살은 목숨을 옮기는 법이 아니다. <b>이름을 옮기는 법</b>이다. 죽을 자리에서 이름을 빼면, 그 자리에 다른 이름이 들어간다. 명부는 이름만 본다.'],
+    [null,'— 그러므로 이 법에 먹힌 자는 이름을 잃는다. 이름을 잃은 넋은 놓여나지 못하고, 제 이름을 찾을 때까지 산 자를 부른다.']];
+  if(PQNAME){
+    n.push([null,'— 내가 먹인 아이의 이름은 <b>간난이</b>다. 부모가 없어 성도 모른다. 이 이름을 여기 적어 둔다. 누군가 이 글을 읽거든, 그 아이에게 대신 살아난 자의 이름을 일러 주어라.']);
+    n.push(['sp','그 이름을 적는 데 오래 걸리지 않았다. 세 글자였다.']);
+  }else{
+    n.push([null,'— 내가 먹인 아이의 이름을 나는 모른다. 묻지 않았다. 묻지 않은 것이 이 글에서 가장 부끄러운 대목이다.']);
+    n.push(['sp','이름을 모르니 적을 수도 없었다. 나는 그 자리를 비워 두었다. 십이 년을 비워 둔 채로.']);
+  }
+  n.push([null,'— 마지막으로 적는다. 이 법으로 처음 살아난 자는 내 아들이다.']);
+  n.push(['said','— 서린아. 네가 살아 있는 것은 누군가 대신 갔기 때문이다.']);
+  n.push(['said','— 네 몸이 아픈 것은 병이 아니라, 네가 건너온 자리의 표식이다.']);
+  n.push(['sp','— 언젠가 네가 이 글을 읽거든, 아비를 용서하지 말고 대신 그 이름들을 찾아라. 그것만이 갚는 길이다.']);
+  show(n,[{k:'덮는다',t:'궤에 넣는다. 십이 년을 기다릴 글이다.',f:pqEnd}]);
+}
+function pqEnd(){
+  const n=[['hd','대살록 — 끝'],
+    [null,'한중원은 이튿날 의금부 뜰에서 죽었다. 역적으로 기록되었다.'],
+    [null,'그의 아들은 그해 열두 살이었고, 그 겨울에 신병을 앓았고, 신내림을 거부했다.'],
+    ['sp','아비가 무엇을 했는지도, 제가 무엇을 딛고 살아 있는지도 모른 채로.']];
+  if(PQNAME){
+    n.push(['got','간난이 — 이름을 아는 자만이 놓아줄 수 있다']);
+    n.push(['sp','유고에는 이름 하나가 적혀 있다. 십이 년 뒤 그것을 펴 든 자가, 그 이름을 읽게 될 것이다.']);
+  }else{
+    n.push(['bad','이름 없음 — 유고의 그 자리는 끝내 비어 있다']);
+    n.push(['sp','아비가 묻지 않은 이름을, 아들이 대신 묻고 다니게 된다. 도성의 모든 사라진 자에게, 하나씩.']);
+  }
+  n.push(['sp','———']);
+  n.push([null,'「창귀록」의 한서린이 창귀에게 이름을 돌려주는 일은, 아비가 지운 이름을 되찾는 일이었다.']);
+  show(n,[
+    {k:'다시 읽는다',t:'대살록을 처음부터 다시 본다.',f:pqStart},
+    {k:'돌아간다',t:'표지로 돌아간다.',f:()=>{PQ=false;boot();}}
+  ]);
+}
 /* ── 표지 ── */
 function boot(){
   const d=loadSave();
@@ -583,20 +1552,39 @@ function boot(){
     const where=d.at==='night'?`${d.day}일차 밤`:(d.day<4?`${d.day}일차 낮`:'그믐');
     c.push({k:'이어하기',t:`${where} — 무병 ${d.mu} · 단서 ${d.clues.length}개`,f:()=>restore(d)});
   }
-  c.push({k:'처음부터',t:'서장부터 시작한다.',f:reset});
+  c.push({k:'시작',t:'서장부터 시작한다.',f:reset});
+  if((CANSAVE&&seen().size>0)||DEV)c.push({k:'서장을 건너뛴다',t:'제웅 앞에서부터. — 이미 아는 이야기는 접어둔다.',f:skipIntro});
+  c.push({k:'용어',t:'모르는 말을 먼저 훑어본다.',f:()=>{E('modal').hidden=false;}});
+  if((CANSAVE&&seen().size>0)||DEV)c.push({k:'엔딩 도감',t:`발견한 결말을 살펴본다. (${seen().size}/${ENDINGS.length})`,f:codex});
+  if(DEV||(CANSAVE&&seen().size>=ENDINGS.length))c.push({k:'대살록 代殺錄',t:'십이 년 전, 아버지가 남긴 이야기. — 모든 결말을 본 자에게 열린다.',cls:'gold',f:pqStart});
+  if(DEV)c.push({k:'[테스트] 전 엔딩 해금',t:'도감을 모두 채운 상태로 만든다. 개발용.',f:()=>{ENDINGS.forEach(e=>markSeen(e.key));boot();}});
   const n=[
     ['hd','창귀록 倀鬼錄'],
-    [null,'짚으로 엮은 사람이 눈밭에 누워 있다. 어제 이 자리에서 물지게꾼 하나가 사라졌다.'],
-    ['sp','호랑이에게 잡아먹힌 자는 창귀가 된다. 창귀는 다음 사람을 데려와야만 놓여난다.<br>놓여나는 길은 하나뿐 — <b>자기 대신 살아남은 자의 이름</b>을 듣는 것.'],
-    [null,'나흘이다. 그믐 나례 전에 이름을 찾아라.']
+    [null,'조선 초, 한양. 열흘 사이에 여섯 명이 사라졌다. 시신은 없고 <b>짚으로 만든 인형</b>만 남았다. 모두 아무도 찾지 않는 가난한 사람들이었다.'],
+    [null,'당신은 <b>몰락한 양반 집안의 포교</b>다. 위에서는 역적의 자식이라 하고, 아래에서는 그래도 양반이라 한다. 어디에도 속하지 못한다.'],
+    ['sp','그리고 당신에게는 남들이 못 보는 것이 보인다. 어릴 적 신내림을 거부한 탓이다. 볼 때마다 몸이 상한다.'],
+    [null,'<b>닷새 안에 범인을 찾아야 한다.</b>'],
+    ['hd','어떻게 하는가'],
+    ['said','<b>① 하루에 세 번 움직인다.</b> 닷새, 모두 열다섯 번. 그게 전부다.'],
+    ['said','<b>② 사람을 만나 심문한다.</b> 압박 · 회유 · 물증 제시 — <b>상대마다 통하는 방법이 다르다.</b>'],
+    ['said','<b>③ 방법을 틀리면 문이 닫힌다.</b> 겁쟁이를 몰아붙이면 증거를 안고 도망치고, 무너지기 직전인 사람을 찌르면 죽는다. 그 단서는 <b>영영 사라진다.</b>'],
+    ['said','<b>④ 순서가 있다.</b> 한 사람에게서 얻은 물증이 다음 사람의 입을 연다. 준비 없이 아무나 붙들면 <b>발품만 버리고, 그 사람의 경계만 산다.</b>'],
+    ['said','<b>⑤ 신안(神眼)을 쓰면 상대의 속을 들여다볼 수 있다.</b> 대신 <b>무병</b>이 오른다. 무병이 깊을수록 또렷하게 들리지만 — <b>80을 넘으면 들은 것의 절반이 거짓이고, 100이면 죽는다.</b>'],
+    ['said','<b>⑥ 밤에는 셋 중 하나.</b> 창귀를 마주보거나(무병↑), 부적을 태우거나, 그냥 잔다(무병↓).'],
+    ['sp','모르는 낱말이 나오면 화면 아래 <b>용어 풀이</b>를 누르면 된다. 언제든 열린다.']
   ];
-  if(!CANSAVE)n.push(['bad','이 화면에서는 진행이 저장되지 않는다 — HTML 파일을 직접 열면 저장된다']);
+  if(!CANSAVE)n.push(['bad','이 화면에서는 진행이 저장되지 않는다 — 웹에 올려 접속하면 저장된다']);
   show(n,c);
 }
 
 /* 게임을 먼저 띄운다. 장식은 그 다음이다. */
 try{
   E('reset').onclick=()=>{if(confirm('진행한 것을 모두 버리고 처음부터 시작합니다.'))reset();};
+  E('gloss').onclick=()=>{E('modal').hidden=false;};
+  E('note-btn').onclick=notebook;
+  E('note').onclick=(e)=>{if(e.target===E('note'))E('note').hidden=true;};
+  E('close').onclick=()=>{E('modal').hidden=true;};
+  E('modal').onclick=(e)=>{if(e.target===E('modal'))E('modal').hidden=true;};
 }catch(e){}
 
 boot();
