@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>마지막 국도</title>
+<style>
+  :root{
+    --bg:#0d0f12; --ink:#d7d2c8; --dim:#8b8578; --line:#22262c;
+    --warn:#c98a52; --sp:#e6cfa8; --said:#a9c2cf; --good:#8fbf8f; --bad:#c47b7b;
+    --seat:#2a2f36;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink)}
+  body{
+    font-family:"Nanum Myeongjo","Iowan Old Style",Georgia,"Noto Serif KR",serif;
+    line-height:1.75; font-size:17px;
+    -webkit-text-size-adjust:100%;
+    background:
+      radial-gradient(120% 80% at 50% -10%, #14181d 0%, #0d0f12 60%) fixed;
+  }
+  #wrap{max-width:680px;margin:0 auto;padding:18px 20px 96px;min-height:100vh}
+  #hud{
+    position:sticky;top:0;z-index:5;margin:-18px -20px 18px;padding:10px 20px;
+    background:rgba(13,15,18,.92);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);font-size:13px;color:var(--dim);
+    display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;
+    font-family:"Nanum Gothic",system-ui,sans-serif;letter-spacing:.02em
+  }
+  #hud b{color:var(--ink);font-weight:600}
+  #hud .warn{color:var(--warn)}
+  #hud .party{flex-basis:100%;color:var(--dim);font-size:12px;margin-top:2px}
+  #hud .seat{display:inline-block;margin-right:6px;padding:1px 7px;border:1px solid var(--seat);border-radius:11px;background:#161a1f;color:var(--ink)}
+  #hud .empty{color:#4a4f57;border-style:dashed}
+  #main>div{margin:0 0 14px;animation:f .5s ease both}
+  @keyframes f{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
+  .hd{font-family:"Nanum Gothic",system-ui,sans-serif;font-size:14px;letter-spacing:.18em;
+    color:var(--dim);text-transform:none;border-bottom:1px solid var(--line);
+    padding-bottom:7px;margin-bottom:6px}
+  .sp{color:var(--sp);font-style:italic}
+  .said{color:var(--said);padding-left:14px;border-left:2px solid #2b3540}
+  .note{color:var(--dim);font-size:14.5px}
+  .good{color:var(--good)} .bad{color:var(--bad)}
+  #acts{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+  button.act{
+    text-align:left;font:inherit;color:var(--ink);background:#14181d;
+    border:1px solid var(--line);border-radius:8px;padding:12px 15px;cursor:pointer;
+    transition:border-color .15s,background .15s;line-height:1.5
+  }
+  button.act:hover{border-color:#3a4550;background:#171c22}
+  button.act .k{font-family:"Nanum Gothic",system-ui,sans-serif;font-weight:700;letter-spacing:.02em}
+  button.act .t{display:block;color:var(--dim);font-size:14px;margin-top:2px}
+  button.act.warn{border-color:#4a3a28} button.act.warn:hover{border-color:var(--warn)}
+  button.act.warn .k{color:var(--warn)}
+  button.act[disabled]{opacity:.4;cursor:not-allowed}
+  button.act[disabled]:hover{border-color:var(--line);background:#14181d}
+  .end .hd{color:var(--sp)}
+  .codex{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);
+    font-family:"Nanum Gothic",system-ui,sans-serif;font-size:12.5px;color:var(--dim)}
+  .codex b{color:var(--ink)} .codex .lock{color:#4a4f57}
+  a{color:var(--said)}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="hud" hidden></div>
+  <div id="main"></div>
+  <div id="acts"></div>
+</div>
+<script>
+/* 마지막 국도 — 단일 파일 포스트아포칼립스 로드무비. 의존성 0, 빌드 0.
+   설계 원칙(창귀록 회고 반영):
+   - 좋은 엔딩은 자원 최적화가 아니라 선택으로 결정된다. 예산을 knife-edge로 만들지 않는다.
+   - 모든 상태값은 어떤 엔딩/씬에 반영된다. 반영 없는 상태는 두지 않는다.
+   - 막다른 화면을 절대 만들지 않는다. 자원 고갈은 '엔딩'이지 소프트락이 아니다.
+   - 중간 여정은 풀에서 추첨 → 회차마다 다르다. 인트로는 짧다.
+   - 중간 세이브 없음(세이브 스키마 버그 원천 차단). 엔딩 도감만 저장.
+   전부 전역 스코프. 함수명이 API다. check.mjs가 grep한다. */
+
+const DEV = /[?#&]dev\b/.test(location.search + location.hash);
+
+/* ── DOM 뼈대 ── */
+const E = id => document.getElementById(id);
+const MAIN = E('main'), ACTS = E('acts'), HUD = E('hud');
+
+/* ── 상태: INIT() 한 곳에서만 만든다. 필드를 늘리면 여기만 고친다. ── */
+const SEATS = 3;                 // 조수석·뒷좌석 3 (운전자인 나는 별도). 태우려는 자는 4명.
+function INIT(){ return {
+  dist:7,                        // 북항까지 남은 구간
+  fuel:6, food:5, hope:5,        // 자원 — 각기 다른 실패 경로를 가진다
+  party:[],                      // 동승자 id (최대 SEATS)
+  met:new Set(),                 // 만난 적 있는 동승자 (재등장 방지)
+  fate:{},                       // id -> 결말 태그 (엔딩 개별 문구)
+  flags:new Set(),               // 굵직한 선택들
+  leg:0,                         // 지난 경유지 수
+  hungry:0,                      // 연속 굶은 구간
+  used:new Set(),                // 이번 회차에 소진한 인카운터 (once)
+  begun:false,                   // 여정 시작 여부 (표지에서 HUD 숨김)
+  over:false
+}; }
+let S = INIT();
+const SETS = ['met','flags','used'];   // party는 배열, fate는 객체
+
+const has = f => S.flags.has(f);
+const aboard = id => S.party.includes(id);
+/* 조사: 받침에 맞는 형태를 고른다. J('은우','을/를')→'를', J('도현','을/를')→'을' */
+function J(w, pair){
+  const [a,b]=pair.split('/');
+  const s=w||'', c=s.charCodeAt(s.length-1);
+  const batchim = c>=0xAC00 && c<=0xD7A3 && (c-0xAC00)%28!==0;
+  return batchim ? a : b;
+}
+const clamp = (v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+function res(k,d){ S[k]=clamp(S[k]+d, 0, 99); }
+
+/* ── 동승자. trait는 실제 기계 효과가 있어야 한다(죽은 특성 금지). ── */
+const COMP = {
+  dohyeon:{ name:'도현', tag:'늙은 정비공',
+    trait:'기름 냄새를 안다 — 주유 성공이 잦고 덤이 붙는다' },
+  eunwoo:{ name:'은우', tag:'혼자 남은 아이',
+    trait:'함께 있으면 사람들의 손이 덜 떨린다 — 희망이 잘 깎이지 않는다' },
+  hanna:{ name:'한나', tag:'떠도는 의사',
+    trait:'한 번은, 죽을 자리에서 사람을 끌어낸다' },
+  jun:{ name:'준', tag:'탈영한 군인',
+    trait:'막아선 자들을 지난다 — 대신 그날 밤 아무도 웃지 않는다' }
+};
+const CID = Object.keys(COMP);   // ['dohyeon','eunwoo','hanna','jun']
+
+/* ── 경유지 이름. leg마다 하나. 분위기용. ── */
+const PLACES = ['죽은 톨게이트','잿빛 저수지','7번 국도 32km','무너진 고가','소금 평원',
+  '옛 휴게소','끊긴 철교','내륙의 끝','북항 어귀'];
+const placeName = () => PLACES[Math.min(S.leg, PLACES.length-1)];
+
+/* ══════════ 렌더 엔진 (창귀록 show/paint 계승) ══════════ */
+function paint(){
+  if(S.over || !S.begun){ HUD.hidden=true; return; }
+  HUD.hidden=false;
+  const warnF = S.fuel<=1 ? 'warn' : '', warnH = S.hope<=1 ? 'warn' : '';
+  const warnG = S.food<=0 ? 'warn' : '';
+  let seats='';
+  for(let i=0;i<SEATS;i++){
+    const id=S.party[i];
+    seats += id ? `<span class="seat">${COMP[id].name}</span>`
+                : `<span class="seat empty">빈자리</span>`;
+  }
+  HUD.innerHTML =
+    `<span>북항까지 <b>${S.dist}</b></span>`+
+    `<span class="${warnF}">연료 <b>${S.fuel}</b></span>`+
+    `<span class="${warnG}">식량 <b>${S.food}</b></span>`+
+    `<span class="${warnH}">희망 <b>${S.hope}</b></span>`+
+    `<span class="party">태운 사람 &nbsp;${seats}</span>`;
+}
+/* nodes: [[cls|null, html], ...]   choices: [{k,t,f,off?,cls?}] */
+function show(nodes, choices){
+  paint();
+  MAIN.innerHTML=''; ACTS.innerHTML='';
+  for(const [cls,html] of nodes){
+    const d=document.createElement('div');
+    if(cls) d.className=cls;
+    d.innerHTML=html;
+    MAIN.appendChild(d);
+  }
+  for(const c of (choices||[])){
+    const b=document.createElement('button');
+    b.className='act'+(c.cls?' '+c.cls:'');
+    b.innerHTML=`<span class="k">${c.k}</span>`+(c.t?`<span class="t">${c.t}</span>`:'');
+    if(c.off){ b.disabled=true; }
+    else b.onclick=()=>{ try{ c.f(); }catch(e){ crash(e); } };
+    ACTS.appendChild(b);
+  }
+  try{ scrollTo(0,0); }catch(e){}
+}
+function crash(e){
+  S.over=true;
+  show([['hd','고장'],[null,'무언가 어긋났다. 새로 시작해야 한다.'],
+    ['note',(e&&e.message)||String(e)]],
+    [{k:'처음으로',t:'',f:()=>{ S=INIT(); boot(); }}]);
+}
+
+/* ══════════ 부팅 / 표지 / 인트로 ══════════ */
+function boot(){
+  S=INIT(); paint(); HUD.hidden=true;
+  const c=[{k:'출발한다',t:'북항으로. 소문이 사실이길 바라며.',f:intro}];
+  const codex = seen();
+  if(codex.size>0 || DEV) c.push({k:'다시, 다른 길로',t:'같은 국도, 다른 선택.',f:intro});
+  show([
+    ['hd','마지막 국도'],
+    [null,'바다가 죽고 하늘이 내려앉은 지 여러 해. 내륙에는 더 남은 것이 없다.'],
+    [null,'북쪽 항구에서 배가 한 척 떠난다는 말을 들었다. 마지막 배라고 했다. 소문일지도 모른다.'],
+    ['sp','차는 나 하나를 위한 것이 아니다. 자리가 셋 남았다. 그것이 문제의 전부다.'],
+  ], c);
+  renderCodex();
+}
+function intro(){
+  S.begun=true;
+  show([
+    ['hd','죽은 톨게이트 — 새벽'],
+    [null,'기름은 반 탱크가 조금 넘는다. 뒷좌석에 식량 상자. 조수석은 비었다.'],
+    [null,'국도는 북쪽으로 곧게 뻗어 있다. 아직은 아무도 없다. 아무도 없다는 건 좋은 일이었던 적이 없다.'],
+    ['sp','시동을 건다. 오래 걸리진 않을 것이다. 사람은 곧 나타난다.'],
+  ],[{k:'북쪽으로',t:'',f:()=>{ S.leg=0; leg(); }}]);
+}
+
+/* ══════════ 여정 루프 ══════════
+   leg(): 경유지 도착 → 인카운터 하나 추첨 → 씬. 씬은 반드시 onward()로 수렴한다.
+   onward(): 다음 구간으로 달린다 → drive().
+   drive(): 자원 정산 + 실패 판정. dist=0이면 harbor(). 절대 빈 화면을 만들지 않는다. */
+function leg(){
+  if(S.over) return;
+  if(S.dist<=0){ harbor(); return; }
+  const enc = pickEnc();
+  S.used.add(enc.id);
+  enc.f();
+}
+function onward(){ drive(); }
+function drive(){
+  // 달린다: 연료 1, 식량 1, 거리 1.
+  S.fuel -= 1; S.food -= 1; S.dist -= 1; S.leg += 1;
+  if(S.food < 0){                 // 굶주림은 즉사가 아니라 희망을 갉는다
+    S.food = 0; S.hungry += 1;
+    S.hope -= (S.hungry>=2 ? 2 : 1);
+  } else S.hungry = 0;
+  if(S.fuel < 0){ S.fuel=0; return end('stranded'); }   // 연료는 즉시 좌초
+  if(S.hope <= 0){ S.hope=0; return end('collapse'); }   // 희망 붕괴 → 이탈
+  if(S.dist <= 0) return harbor();
+  // 굶주린 밤이면 한 줄 알린다(조용한 악화 금지)
+  if(S.hungry>0){
+    return show([['hd',placeName()],
+      [null,'상자 바닥이 보인다. 아무도 그 말을 입 밖에 내지 않는다.'],
+      ['sp', S.party.length? '누군가의 숨소리가 밤새 고르지 않았다.' : '혼자라는 게 처음으로 다행이었다.']],
+      [{k:'계속 간다',t:'',f:leg}]);
+  }
+  leg();
+}
+
+/* 인카운터 추첨: 소진 안 된 것 중 조건 맞는 걸 가중 추첨.
+   repeat=true는 여러 번 나올 수 있다. 항상 하나는 반환된다(빈손 금지). */
+function pickEnc(){
+  const pool = ENC.filter(e=>{
+    if(!e.repeat && S.used.has(e.id)) return false;
+    if(e.when && !e.when()) return false;
+    return true;
+  });
+  // 초반엔 동승자 합류를, 후반엔 사건을 선호
+  const weight = e => {
+    let w = e.w || 1;
+    if(e.join && S.leg<=3 && S.party.length<SEATS) w += 3;
+    if(e.late && S.dist<=3) w += 2;
+    return w;
+  };
+  const tot = pool.reduce((a,e)=>a+weight(e),0);
+  let r = Math.random()*tot;
+  for(const e of pool){ r-=weight(e); if(r<=0) return e; }
+  return pool[pool.length-1] || FALLBACK;
+}
+
+/* 합류 처리: 자리가 있으면 태우고, 꽉 찼으면 '누굴 내릴까' 딜레마로 간다. */
+function offerSeat(id, joinLine, refuseLine){
+  S.met.add(id);
+  const c=COMP[id];
+  if(S.party.length < SEATS){
+    return [{k:`${c.name}${J(c.name,'을/를')} 태운다`, t:c.trait, f:()=>{
+      S.party.push(id); res('hope', id==='eunwoo'?2:1);
+      show([['hd','새 동승자'],[null,joinLine],
+        ['note',`${c.name} — ${c.tag}`],
+        ['sp','자리가 하나 줄었다. 연료도 그만큼 빨리 준다.']],
+        [{k:'다시 길로',t:'',f:onward}]);
+    }},
+    {k:'그냥 지나친다', t:refuseLine, cls:'warn', f:()=>{
+      res('hope',-1);
+      show([['hd','지나침'],[null,refuseLine],
+        ['sp','백미러에서 그 사람이 작아졌다. 이내 점이 되었다.']],
+        [{k:'가속한다',t:'',f:onward}]);
+    }}];
+  }
+  // 만석: 태우려면 누군가 내려야 한다 — 이 게임의 심장
+  const swap = S.party.map(pid=>({
+    k:`${COMP[pid].name}${J(COMP[pid].name,'을/를')} 내리고 ${c.name}${J(c.name,'을/를')} 태운다`,
+    t:`${COMP[pid].name}${J(COMP[pid].name,'은/는')} 국도에 남는다.`, cls:'warn',
+    f:()=>{
+      S.party = S.party.filter(x=>x!==pid); S.fate[pid]='left';
+      S.party.push(id); res('hope',-2);
+      show([['hd','자리 교환'],
+        [null,`${COMP[pid].name}${J(COMP[pid].name,'은/는')} 오래 나를 보았다. 그러고는 문을 열고 내렸다.`],
+        ['said','“…여기까지 온 것도 어디요.”'],
+        ['sp','바꾼다는 건 한쪽을 버린다는 뜻이다. 나는 그걸 방금 배웠다.']],
+        [{k:'출발한다',t:'',f:onward}]);
+    }
+  }));
+  swap.push({k:`${c.name}${J(c.name,'을/를')} 두고 간다`, t:'자리가 없다. 그뿐이다.', f:()=>{
+    res('hope',-1);
+    show([['hd','만석'],[null,'미안하다고 말하지 않았다. 그런 말은 이제 값이 없다.'],
+      ['sp','자리는 셋뿐이었다. 처음부터 그랬다.']],
+      [{k:'간다',t:'',f:onward}]);
+  }});
+  return swap;
+}
+
+/* ══════════ 인카운터 풀 ══════════ */
+const ENC = [
+  // ── 동승자 합류 넷 ──
+  { id:'oldman', join:true, when:()=>!S.met.has('dohyeon'), f:()=>{
+    show([['hd',placeName()],
+      [null,'멈춰 선 화물차 옆에서 노인이 손을 든다. 기름때 밴 손이다. 위협은 아니다.'],
+      ['said','“정비를 좀 아오. 태워 주면 값은 하리다.”']],
+      offerSeat('dohyeon',
+        '도현은 조수석에 앉자마자 계기판을 두드려 보았다. “이 차, 아직 멀리 가겠소.”',
+        '노인은 손을 내리지 않았다. 내가 멀어질 때까지.'));
+  }},
+  { id:'kid', join:true, when:()=>!S.met.has('eunwoo'), f:()=>{
+    show([['hd',placeName()],
+      [null,'휴게소 자판기 뒤에 아이가 웅크려 있다. 열 살이나 되었을까. 혼자다.'],
+      ['said','“…아저씨도 북쪽 가요?”']],
+      offerSeat('eunwoo',
+        '은우는 상자를 꼭 끌어안고 탔다. 안에 무엇이 든지는 묻지 않았다.',
+        '아이는 울지 않았다. 우는 법을 잊은 얼굴이었다. 그게 더 오래 남았다.'));
+  }},
+  { id:'medic', join:true, when:()=>!S.met.has('hanna'), f:()=>{
+    show([['hd',placeName()],
+      [null,'무너진 의원 앞, 한 여자가 낡은 왕진가방을 들고 서 있다. 눈이 맑다.'],
+      ['said','“나는 의사예요. 아직은. 당신들, 성한 사람 맞아요?”']],
+      offerSeat('hanna',
+        '한나는 뒷좌석에서 우리 셋의 얼굴을 차례로 살폈다. 진찰이었다.',
+        '그 여자가 누군가의 목숨이었을 수도 있다. 나는 그 생각을 눌러 껐다.'));
+  }},
+  { id:'soldier', join:true, when:()=>!S.met.has('jun'), f:()=>{
+    show([['hd',placeName()],
+      [null,'검문소 잔해에 군복 입은 사내가 앉아 있다. 계급장은 뜯겨 나갔다. 총은 내려놓았다.'],
+      ['said','“나는 도망친 놈이오. 그래도 앞은 뚫어 줄 수 있소.”']],
+      offerSeat('jun',
+        '준은 말이 없었다. 다만 앞유리 너머를 나보다 먼저 읽었다.',
+        '사내는 고개를 끄덕였다. 원망도 없이. 그런 얼굴이 더 무서웠다.'));
+  }},
+
+  // ── 주유 (연료 보충) ── 반복 가능
+  { id:'siphon', repeat:true, w:2, f:()=>{
+    const skilled = aboard('dohyeon');
+    show([['hd',placeName()],
+      [null,'버려진 주유소. 탱크는 대개 말랐지만, 바닥에 조금은 남아 있곤 한다.'],
+      [null, skilled ? '도현이 벌써 호스를 물고 있다. “이런 건 나한테 맡기쇼.”'
+                     : '호스를 밀어 넣는다. 냄새가 지독하다. 잘못하면 불이 붙는다.']],
+      [{k:'뽑는다',t: skilled?'도현이 있으면 실수가 적다.':'연료를 얻는다. 운이 나쁘면 대가가 있다.', f:()=>{
+        let g = 2 + (skilled?1:0);
+        const bad = !skilled && Math.random()<0.3;
+        res('fuel', g);
+        const n=[['hd','주유'],[null,`녹슨 탱크에서 ${g}만큼을 건졌다.`]];
+        if(bad){ res('food',-1); n.push([null,'급히 하다 상자 하나를 흘렸다. 식량 하나를 잃었다.']); }
+        n.push(['sp', skilled?'도현이 손을 닦으며 씩 웃었다.':'연료계 바늘이 조금 올라갔다. 그거면 됐다.']);
+        show(n,[{k:'다시 길로',t:'',f:onward}]);
+      }},
+      {k:'그냥 간다',t:'냄새가 마음에 걸린다.',f:onward}]);
+  }},
+
+  // ── 식량 (도덕) ──
+  { id:'pantry', repeat:true, w:2, f:()=>{
+    show([['hd',placeName()],
+      [null,'약탈당한 가게. 선반 뒤에 통조림 몇 개가 남아 있다. 누군가 숨겨 둔 것이다.'],
+      [null,'벽에 서툰 글씨. “돌아올게. 손대지 마요.”']],
+      [{k:'가져간다',t:'식량을 얻는다. 그 사람은 돌아오지 못할 것이다.',cls:'warn',f:()=>{
+        res('food',2); res('hope',-1); S.flags.add('took_stash');
+        show([['hd','약탈'],[null,'통조림 두 개를 챙겼다. 글씨를 다시 보지 않았다.'],
+          ['sp','산 자는 죽은 자의 것을 먹는다. 그렇게 산다.']],
+          [{k:'나선다',t:'',f:onward}]);
+      }},
+      {k:'남겨 둔다',t:'그 약속을 지워 버리고 싶지 않다.',f:()=>{
+        res('hope',1);
+        show([['hd','그냥 나옴'],[null,'선반을 원래대로 두었다. 배는 여전히 고프다.'],
+          ['sp','지킬 수 없는 약속이라도, 누군가는 그걸 남겨 둬야 한다.']],
+          [{k:'나선다',t:'',f:onward}]);
+      }}]);
+  }},
+
+  // ── 봉쇄 (다경로 사건) ──
+  { id:'blockade', w:2, when:()=>S.leg>=1, f:()=>{
+    const c=[];
+    c.push({k:'통행료를 낸다',t:'연료 2를 준다.', off:S.fuel<2, f:()=>{
+      res('fuel',-2);
+      done([['hd','통행'],[null,'기름 두 통을 건네자 바리케이드가 열렸다.'],
+        ['sp','길은 공짜였던 적이 없다. 이제는 값을 기름으로 친다.']]);
+    }});
+    if(aboard('jun')) c.push({k:'준이 앞을 뚫는다',t:'아무것도 잃지 않는다. 대신 희망 2.',cls:'warn',f:()=>{
+      res('hope',-2); S.flags.add('jun_blood'); S.fate.jun='blood';
+      done([['hd','돌파'],[null,'준이 차에서 내렸다. 오래 걸리지 않았다. 다시 탔을 때 그의 손을 아무도 보지 않았다.'],
+        ['sp','앞은 뚫렸다. 그날 밤 차 안은 조용했다.']]);
+    }});
+    if(aboard('dohyeon')) c.push({k:'도현이 저들의 차를 고쳐 준다',t:'통행료 대신 손을 빌려준다.',f:()=>{
+      res('hope',1); S.fate.dohyeon='deal';
+      done([['hd','거래'],[null,'도현이 저들의 발전기를 손봐 주었다. 우두머리가 처음으로 웃었다.'],
+        ['said','“…노인 양반, 당신 같은 사람이 더 있으면 좋겠소.”'],
+        ['sp','기름 대신 손을 내주고 지났다. 드문 밤이었다.']]);
+    }});
+    c.push({k:'왔던 길로 돌아 우회한다',t:'구간을 되돌린다(북항까지 +1).',cls:'warn',f:()=>{
+      S.dist += 1;
+      done([['hd','우회'],[null,'핸들을 돌렸다. 힘겹게 얻은 거리를 하루치 반납한다.'],
+        ['sp','돌아가는 길은 늘 더 멀게 느껴진다.']]);
+    }});
+    show([['hd',placeName()],
+      [null,'무장한 자들이 드럼통으로 길을 막았다. 대여섯. 총구는 아직 땅을 본다.'],
+      ['said','“지나가려면 값을 치러야지. 기름이든, 사람이든.”']], c);
+    function done(nodes){ show(nodes,[{k:'다시 길로',t:'',f:onward}]); }
+  }},
+
+  // ── 잿바람 폭풍 ──
+  { id:'storm', w:1, when:()=>S.leg>=1, f:()=>{
+    show([['hd',placeName()],
+      [null,'지평선이 검게 부풀어 오른다. 잿바람이다. 몇 시간이면 시야가 사라진다.']],
+      [{k:'차를 세우고 버틴다',t:'안전하다. 대신 하루를 잃는다(북항까지 +1).',f:()=>{
+        S.dist += 1; res('hope', aboard('eunwoo')?0:-0);
+        show([['hd','대피'],[null,'창을 테이프로 막고 웅크렸다. 잿가루가 문틈으로 스몄다.'],
+          ['sp','기다림도 전진의 일부라고, 누군가 말했었다. 그게 사실이길.']],
+          [{k:'바람이 지나면 나선다',t:'',f:onward}]);
+      }},
+      {k:'헤드라이트로 뚫는다',t:'거리를 지킨다. 연료 2를 태운다.',cls:'warn',off:S.fuel<2,f:()=>{
+        res('fuel',-2);
+        show([['hd','강행'],[null,'전조등 두 줄기에 의지해 폭풍 속을 기었다. 엔진이 잿가루를 삼키며 앓았다.'],
+          ['sp','앞이 보이지 않아도 앞으로는 갔다. 그거면 됐다.']],
+          [{k:'빠져나온다',t:'',f:onward}]);
+      }}]);
+  }},
+
+  // ── 길 위의 낯선 이 (만석일 때 무게가 실린다) ──
+  { id:'beggar', w:1, when:()=>S.leg>=2, f:()=>{
+    const full = S.party.length>=SEATS;
+    const n=[['hd',placeName()],
+      [null,'한 사람이 길 한복판에 서서 두 손을 모은다. 태워 달라는 뜻이다. 이름도 사연도 없다.']];
+    const c=[];
+    if(!full){
+      n.push([null,'자리는 있다. 낯선 사람일 뿐이다.']);
+      c.push({k:'태운다',t:'모르는 사람에게 자리를 준다. 희망 1.',f:()=>{
+        res('hope',1); S.flags.add('kind_stranger');
+        show([['hd','동승'],[null,'그 사람은 뒷좌석 구석에서 내내 잠만 잤다. 다음 마을에서 조용히 내렸다.'],
+          ['sp','이름도 모른 채 얼마간 함께 갔다. 그거면 됐던 걸까.']],
+          [{k:'간다',t:'',f:onward}]);
+      }});
+    } else {
+      n.push([null,'자리가 없다. 그 사람도 그걸 안다. 그래도 손을 내린다.']);
+    }
+    c.push({k:'지나친다',t: full?'자리가 없다. 어쩔 수 없다.':'모르는 사람이다. 위험하다.',cls:'warn',f:()=>{
+      res('hope',-1);
+      show([['hd','지나침'],[null,'속도를 줄이지 않았다. 그 사람은 팔을 내렸다.'],
+        ['sp','멈추지 않은 이유를 나중에 여러 번 지어냈다. 어느 것도 사실은 아니었다.']],
+        [{k:'간다',t:'',f:onward}]);
+    }});
+    show(n,c);
+  }},
+
+  // ── 병 (의사 특성이 결정적으로 쓰이는 자리) ──
+  { id:'sick', w:1, when:()=>S.leg>=3 && S.party.length>0, f:()=>{
+    const victim = S.party[S.party.length-1];
+    const vn = COMP[victim].name;
+    show([['hd',placeName()],
+      [null,`${vn}${J(vn,'이/가')} 밤새 열에 시달렸다. 아침이 되자 일어나지 못한다.`]],
+      aboard('hanna') && victim!=='hanna'
+      ? [{k:'한나가 밤새 곁을 지킨다',t:'의사가 있다. 끌어낼 수 있다.',f:()=>{
+          S.fate.hanna='saved'; res('hope',1);
+          show([['hd','회복'],[null,`한나가 가방을 다 비웠다. 동이 틀 무렵 ${vn}${J(vn,'이/가')} 눈을 떴다.`],
+            ['sp','의사가 있다는 건 이런 뜻이었다. 한 번은, 죽을 자리에서 사람을 꺼낸다.']],
+            [{k:'다시 길로',t:'',f:onward}]);
+        }}]
+      : [{k:'약을 찾아 헤맨다',t:'약이 있을지 모른다. 반나절과 운을 건다.',f:()=>{
+          const luck = Math.random()<0.5;
+          if(luck){ res('hope', -1);
+            show([['hd','간신히'],[null,`무너진 약국에서 해열제를 찾았다. ${vn}${J(vn,'은/는')} 이틀을 앓고 일어섰다.`],
+              ['sp','운이 좋았다. 다음에도 좋으리란 법은 없다.']],
+              [{k:'간다',t:'',f:onward}]);
+          } else {
+            S.party = S.party.filter(x=>x!==victim); S.fate[victim]='died'; res('hope',-2);
+            show([['hd','묻는다'],[null,`${vn}${J(vn,'은/는')} 새벽에 조용해졌다. 국도 옆, 얕게 팠다.`],
+              ['said', victim==='eunwoo' ? '“…아저씨. 배는… 정말 있어요?”' : '“…먼저 가 있겠소.”'],
+              ['sp','자리가 하나 비었다. 채우고 싶지 않은 자리였다.']],
+              [{k:'남은 길로',t:'',f:onward}]);
+          }
+        }},
+        {k:'차에서 재우며 계속 간다',t:'멈추지 않는다. 희망 2.',cls:'warn',f:()=>{
+          res('hope',-2);
+          show([['hd','강행군'],[null,`${vn}${J(vn,'을/를')} 뒷좌석에 눕힌 채 달렸다. 아무도 라디오를 켜지 않았다.`],
+            ['sp','멈추면 더 잃을 것 같았다. 멈추지 않아서 잃은 것도 있었을 것이다.']],
+            [{k:'간다',t:'',f:onward}]);
+        }}]);
+  }},
+
+  // ── 초록 골짜기 (되돌아감 엔딩의 입구) ── 후반부만
+  { id:'valley', late:true, when:()=>S.dist<=3 && S.dist>=1, f:()=>{
+    show([['hd',placeName()],
+      [null,'국도를 벗어난 곳에 낮은 골짜기가 있다. 연기가 오른다. 밭이 있다. 사람들이 웃는다.'],
+      [null,'한 여자가 다가온다. 총이 아니라 물그릇을 들고.'],
+      ['said','“북항은 소문이에요. 여기 남아요. 다 받아 줄게요. 자리 같은 건 안 세요.”']],
+      [{k:'여기 남는다',t:'배는 잊는다. 지금 있는 사람들과, 여기서.',f:()=>{ end('turnback'); }},
+      {k:'북항으로 계속 간다',t:'소문이라도 확인해야 한다.',cls:'warn',f:()=>{
+        S.flags.add('passed_valley'); res('hope', aboard('eunwoo')?-1:0);
+        show([['hd','떠남'],[null,'골짜기가 백미러에서 멀어진다. 은우가 있었다면, 그 애는 뒤를 오래 보았을 것이다.'],
+          ['sp','소문을 좇아 확실한 것을 버렸다. 그게 옳았는지는 바다가 말해 줄 것이다.']],
+          [{k:'북쪽으로',t:'',f:onward}]);
+      }}]);
+  }},
+];
+// 풀이 비는 극단 상황용 폴백 — 언제나 onward로 수렴한다(빈 화면 금지)
+const FALLBACK = { id:'road', repeat:true, f:()=>{
+  show([['hd',placeName()],
+    [null,'한동안 아무 일도 없었다. 국도만 있었다. 그것도 나쁘지 않았다.'],
+    ['sp','좋은 소식은 아무 일도 없는 날이다.']],
+    [{k:'계속 간다',t:'',f:onward}]);
+}};
+
+/* ══════════ 북항 — 종막 ══════════ */
+function harbor(){
+  // 배가 정말 있는가: 회차의 굵직한 선택들이 결정한다(운 아님).
+  const boat = S.hope>=3;   // 희망이 남았으면 배는 거기 있다. 아니면 부두는 비었다.
+  if(!boat){
+    return end('empty');
+  }
+  const n=[['hd','북항 어귀 — 저물녘'],
+    [null,'국도가 끝나고 부두가 나온다. 정말로 배가 있다. 녹슬었지만 떠 있다. 사람들이 오른다.'],
+    [null,'선원이 손가락을 편다. “자리, 딱 그만큼.” 우리 일행 수를 세더니 하나를 접는다.']];
+  const cnt = S.party.length;
+  if(cnt===0){
+    n.push(['sp','셀 것도 없었다. 나 혼자다.']);
+    return show(n,[{k:'배에 오른다',t:'',f:()=>end('alone')}]);
+  }
+  // 배는 (일행 + 나) 중 하나를 못 태운다 → 자리를 내줄 것인가
+  n.push([null,`나까지 ${cnt+1}인데, 자리는 ${cnt}. 하나가 남아야 한다.`]);
+  n.push(['sp','여기까지 오는 내내 물었던 것을, 마지막으로 한 번 더 묻는다. 누가 자리에 앉는가.']);
+  const c=[
+    {k:'모두 태우고 내가 남는다',t:'그들을 보낸다. 나는 부두에 선다.',f:()=>end('gaveseat')},
+    {k:'내가 오르고, 함께 간다',t:`동승자 중 한 명이 부두에 남는다.`,cls:'warn',f:()=>{
+      // 남길 사람: 아직 fate 없는 사람 중 하나(가장 나중에 태운 사람이 남는다)
+      const stay = [...S.party].reverse().find(id=>!S.fate[id]) || S.party[S.party.length-1];
+      S.fate[stay]='shore';
+      S.party = S.party.filter(x=>x!==stay);
+      end('together', stay);
+    }}
+  ];
+  show(n,c);
+}
+
+/* ══════════ 엔딩 ══════════
+   개별 문구: 태우고 온/잃은 사람마다 fate로 갈린 한 줄. (창귀록 FREED 계승) */
+const EPI = {
+  dohyeon:{ coast:'도현은 갑판 난간에 기대 엔진 소리를 들었다. “좋은 배요. 오래 가겠소.”',
+    shore:'도현은 부두에 남아 손을 흔들었다. “배는 내가 봐 줄 필요가 없지. 잘 가쇼.”',
+    left:'도현을 국도에 내려놓은 일을 나는 오래 셈했다. 셈이 맞은 적은 없다.',
+    died:'도현의 손은 마지막까지 기름때가 배어 있었다.', deal:'', blood:'' },
+  eunwoo:{ coast:'은우는 뱃머리에 서서 처음으로 바다를 보았다. 상자를 그제야 내려놓았다.',
+    shore:'은우를 배에 태우고 나는 부두에 남았다. 그 애가 뒤돌아보지 않게, 손을 늦게 흔들었다.',
+    left:'은우를 내려놓은 자리를 나는 지도에서 지웠다. 보지 않으려고.',
+    died:'은우가 안고 있던 상자에는 크레용과, 누군가의 사진이 있었다.' },
+  hanna:{ coast:'한나는 갑판에서도 사람들의 얼굴을 살폈다. 그건 이제 버릇이 아니라 그냥 그 사람이었다.',
+    shore:'한나는 부두에 남겠다고 했다. “아픈 사람은 여기도 있어요.” 말릴 수 없었다.',
+    left:'한나를 두고 온 뒤, 누군가 열이 오를 때마다 그 여자를 생각했다.',
+    died:'한나는 남을 살리는 사람이었다. 자기 차례엔 아무도 없었다.', saved:'' },
+  jun:{ coast:'준은 배 뒤편에 앉아 처음으로 총을 물에 던졌다. 아무 말도 하지 않았다.',
+    shore:'준은 부두에 남아 배가 떠나는 쪽을 등지고 섰다. 앞을 뚫는 건 그의 몫이 아니게 되었다.',
+    left:'준을 내려놓았다. 그는 원망하지 않았다. 그런 사람이었다.',
+    died:'준은 앞을 뚫다 뚫리지 않는 것을 만났다.', blood:'준의 손을 나는 끝내 보지 못했다. 보지 않아 주는 것이 예의였다.' }
+};
+const ENDINGS = {
+  together:{ key:'together', title:'함께', grade:'좋음' },
+  gaveseat:{ key:'gaveseat', title:'빈자리', grade:'가장 좋음' },
+  alone:{ key:'alone', title:'홀로', grade:'닿음' },
+  turnback:{ key:'turnback', title:'골짜기', grade:'다른 길' },
+  stranded:{ key:'stranded', title:'좌초', grade:'멈춤' },
+  collapse:{ key:'collapse', title:'흩어짐', grade:'멈춤' },
+  empty:{ key:'empty', title:'빈 부두', grade:'소문' },
+};
+function partyLines(){   // 배에 오른/남은 사람들의 개별 문구
+  const out=[];
+  for(const id of CID){
+    const f = S.fate[id] || (aboard(id) ? 'coast' : null);
+    if(!f) continue;
+    const line = (EPI[id]||{})[f];
+    if(line) out.push(['said', line]);
+  }
+  return out;
+}
+/* 길 위의 굵직한 선택이 결말에 메아리친다. 설정만 하고 안 읽는 플래그를 두지 않는다. */
+function echoes(){
+  const out=[];
+  if(has('took_stash')) out.push([null,'벽에 적힌 그 약속을, 나는 아직도 다 지우지 못했다.']);
+  if(has('kind_stranger')) out.push([null,'이름도 모르는 사람을 한 번 태웠던 일을 가끔 떠올린다. 밑질 것도 없었다.']);
+  if(has('passed_valley')) out.push([null,'골짜기를 그냥 지나쳤다. 거기 남았다면 어땠을까는, 이제 묻지 않는다.']);
+  return out;
+}
+function end(key, extra){
+  S.over=true;
+  markSeen(key);
+  let n;
+  switch(key){
+    case 'together':{
+      n=[['hd','함께'],
+        [null,'배가 부두를 밀어냈다. 잿빛 물이 갈라진다. 뒤로 국도가, 내륙이, 소문이 멀어진다.'],
+        ...partyLines()];
+      if(extra) n.push([null,`${COMP[extra].name}${J(COMP[extra].name,'은/는')} 부두에 남았다. 자리는 늘 하나가 모자랐다.`]);
+      n.push(...echoes());
+      n.push(['sp','살아남는 것과 사람으로 남는 것은 같지 않았다. 나는 둘 다 조금씩만 해냈다.']);
+      break; }
+    case 'gaveseat':
+      n=[['hd','빈자리'],
+        [null,'그들을 다 태웠다. 밧줄이 풀리고, 배가 멀어진다. 나는 부두에 남았다.'],
+        ...partyLines(), ...echoes(),
+        [null,'누군가는 국도를 기억할 것이다. 자리를 세던 밤들을.'],
+        ['sp','내 자리는 처음부터 그들을 위한 것이었는지도 모른다. 그렇게 생각하니 견딜 만했다.']];
+      break;
+    case 'alone':
+      n=[['hd','홀로'],
+        [null, has('jun_blood')
+          ? '배에 올랐다. 자리는 넉넉했다. 아무도 남지 않았으니까.'
+          : '배에 올랐다. 데려올 사람이 하나도 남지 않았다.'],
+        ...echoes(),
+        ['sp','바다는 넓고, 나는 가볍다. 이 가벼움이 오래 무거울 것이다.']];
+      break;
+    case 'turnback':
+      n=[['hd','골짜기'],
+        [null,'밭에 물을 대는 법을 다시 배웠다. 저녁이면 사람들이 모여 밥을 먹는다. 자리를 세지 않는다.'],
+        ...partyLines(), ...echoes(),
+        ['sp','배는 끝내 보지 못했다. 대신 여기서는, 아무도 국도에 두고 오지 않는다.']];
+      break;
+    case 'stranded':
+      n=[['hd','좌초'],
+        [null,'연료계 바늘이 바닥에 눕는다. 엔진이 두어 번 기침하고 멎었다. 국도 한복판, 사방은 소금 평원.'],
+        S.party.length?['said','“…걸어서라도 가요, 우리.”']:[null,'걸어서는 닿지 못한다. 그건 우리 모두 알았다.'],
+        ['sp','북항까지 얼마 남았는지는 이제 중요하지 않다. 차가 서면 국도도 끝난다.']];
+      break;
+    case 'collapse':
+      n=[['hd','흩어짐'],
+        [null,'굶주림과 침묵이 오래 쌓이면 사람은 서로를 견디지 못한다. 어느 새벽, 문이 하나씩 열렸다 닫혔다.'],
+        [null,'눈을 떠 보니 조수석이 비어 있었다. 뒷좌석도. 쪽지 한 장 없었다.'],
+        ['sp','태우는 것만 어려운 줄 알았다. 붙잡아 두는 것은 더 어려웠다.']];
+      break;
+    case 'empty':
+      n=[['hd','빈 부두'],
+        [null,'국도가 끝나고 부두가 나온다. 배는 없다. 밧줄 자국만 남은 말뚝, 식은 모닥불, 발자국들.'],
+        [null, S.party.length?'일행이 나를 보았다. 나는 볼 것을 잃었다.':'혼자 서서, 오래 물을 보았다.'],
+        ['sp','소문은 소문이었다. 그래도 여기까지 오는 길에 있었던 것들은, 소문이 아니었다.']];
+      break;
+  }
+  const e = ENDINGS[key];
+  // 배너 한 줄을 맨 앞에 얹는다. n[0]은 각 case가 만든 hd 노드.
+  show([['note', `— ${e.title} · ${e.grade} —`], ...n],
+       [{k:'기록을 본다',t:'',f:()=>record(key)}]);
+}
+/* 마지막 문장이 화면에 남도록, 통계·도감은 버튼 한 번 더 뒤에 (창귀록 record 계승) */
+function record(key){
+  const codex = seen();
+  const total = Object.keys(ENDINGS).length;
+  const list = Object.values(ENDINGS).map(e=>
+    codex.has(e.key) ? `<b>${e.title}</b>` : `<span class="lock">${e.title}</span>`
+  ).join(' · ');
+  const took = CID.filter(id=>S.met.has(id)).map(id=>COMP[id].name);
+  show([
+    ['hd','기록'],
+    [null,`이번 여정 — 만난 사람 ${took.length?took.join(', '):'없음'}.`],
+    ['note',`엔딩 ${codex.size}/${total} : ${list}`],
+    codex.size>=total
+      ? ['sp','모든 길을 한 번씩 걸었다. 국도는 이제 당신을 기억한다.']
+      : ['note','같은 국도라도, 누구를 태우느냐에 따라 길은 매번 달라진다.'],
+  ],[
+    {k:'다시 국도로',t:'다른 선택으로 다시 출발한다.',f:boot},
+  ]);
+}
+
+/* ══════════ 엔딩 도감 (localStorage — 유일한 저장) ══════════ */
+const CKEY='lastroad.endings.v1';
+let CANSAVE=true;
+function seen(){
+  try{ return new Set(JSON.parse(localStorage.getItem(CKEY)||'[]')); }
+  catch(e){ CANSAVE=false; return new Set(); }
+}
+function markSeen(k){
+  if(DEV) return;              // dev 플레이는 도감을 더럽히지 않는다
+  try{
+    const s=seen(); s.add(k);
+    localStorage.setItem(CKEY, JSON.stringify([...s]));
+  }catch(e){ CANSAVE=false; }
+}
+function renderCodex(){
+  const codex = DEV ? new Set(Object.keys(ENDINGS)) : seen();
+  if(codex.size===0 && !DEV) return;   // 첫 방문엔 스포일러 없음
+  const total=Object.keys(ENDINGS).length;
+  const list = Object.values(ENDINGS).map(e=>
+    codex.has(e.key)?`<b>${e.title}</b>`:`<span class="lock">???</span>`).join(' · ');
+  const d=document.createElement('div');
+  d.className='codex';
+  d.innerHTML=`엔딩 도감 ${codex.size}/${total}<br>${list}`+
+    (CANSAVE?'':'<br><span class="lock">※ 이 브라우저는 저장을 막고 있어 도감이 누적되지 않는다.</span>');
+  MAIN.appendChild(d);
+}
+
+/* ── 별빛 잿가루 배경(장식). 실패해도 게임엔 무관. ── */
+try{
+  // ponytail: 장식 캔버스는 없어도 게임이 돈다. 안 만든다. 필요하면 그때.
+}catch(e){}
+
+boot();
+</script>
+</body>
+</html>
