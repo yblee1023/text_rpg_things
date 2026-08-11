@@ -27,20 +27,22 @@
     display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;
     font-family:"Nanum Gothic",system-ui,sans-serif;letter-spacing:.02em
   }
+  /* #hud는 ID(특정도 1,0,0)라 UA의 [hidden]{display:none}(0,1,0)을 이긴다. 명시적으로 되돌린다. */
+  #hud[hidden]{display:none}
   #hud b{color:var(--ink);font-weight:600}
-  #hud .warn{color:var(--warn)}
+  #hud .warn{color:var(--warn);border-bottom:1px dotted var(--warn);padding-bottom:1px}
   #hud .party{flex-basis:100%;color:var(--dim);font-size:12px;margin-top:2px}
   #hud .seat{display:inline-block;margin-right:6px;padding:1px 7px;border:1px solid var(--seat);border-radius:11px;background:#161a1f;color:var(--ink)}
-  #hud .empty{color:#4a4f57;border-style:dashed}
+  #hud .empty{color:#7d8593;border-style:dashed}
   #main>div{margin:0 0 14px;animation:f .5s ease both}
   @keyframes f{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
   .hd{font-family:"Nanum Gothic",system-ui,sans-serif;font-size:14px;letter-spacing:.18em;
     color:var(--dim);text-transform:none;border-bottom:1px solid var(--line);
     padding-bottom:7px;margin-bottom:6px}
-  .sp{color:var(--sp);font-style:italic}
+  /* 한글엔 이탤릭 자족이 없어 브라우저가 네모틀을 밀어 그린다. 색만으로 구분한다. */
+  .sp{color:var(--sp);margin-top:18px}
   .said{color:var(--said);padding-left:14px;border-left:2px solid #2b3540}
   .note{color:var(--dim);font-size:14.5px}
-  .good{color:var(--good)} .bad{color:var(--bad)}
   #acts{margin-top:22px;display:flex;flex-direction:column;gap:10px}
   button.act{
     text-align:left;font:inherit;color:var(--ink);background:#14181d;
@@ -52,19 +54,21 @@
   button.act .t{display:block;color:var(--dim);font-size:14px;margin-top:2px}
   button.act.warn{border-color:#4a3a28} button.act.warn:hover{border-color:var(--warn)}
   button.act.warn .k{color:var(--warn)}
-  button.act[disabled]{opacity:.4;cursor:not-allowed}
-  button.act[disabled]:hover{border-color:var(--line);background:#14181d}
-  .end .hd{color:var(--sp)}
+  button.act[disabled]{opacity:1;background:#101216;border-color:#1a1e24;color:#6b717b;cursor:not-allowed}
+  button.act[disabled] .t{color:#5f6068}
+  button.act[disabled]:hover{border-color:#1a1e24;background:#101216}
+  #main:focus{outline:none}
+  button.act:focus-visible{outline:2px solid var(--sp);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){#main>div{animation:none}}
   .codex{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);
     font-family:"Nanum Gothic",system-ui,sans-serif;font-size:12.5px;color:var(--dim)}
-  .codex b{color:var(--ink)} .codex .lock{color:#4a4f57}
-  a{color:var(--said)}
+  .codex b{color:var(--ink)} .codex .lock{color:#747a85}
 </style>
 </head>
 <body>
 <div id="wrap">
   <div id="hud" hidden></div>
-  <div id="main"></div>
+  <div id="main" tabindex="-1"></div>
   <div id="acts"></div>
 </div>
 <script>
@@ -87,10 +91,13 @@ const MAIN = E('main'), ACTS = E('acts'), HUD = E('hud');
 const SEATS = 3;                 // 조수석·뒷좌석 3 (운전자인 나는 별도). 태우려는 자는 4명.
 function INIT(){ return {
   dist:7,                        // 북항까지 남은 구간
-  fuel:6, food:5, hope:5,        // 자원 — 각기 다른 실패 경로를 가진다
+  // 7구간 × 1이므로 연료·식량은 원장이 최소 균형이어야 한다. 적자로 두면
+  // 판의 승패가 선택이 아니라 인카운터 추첨에 걸린다(전작 knife-edge 지뢰).
+  fuel:7, food:7, hope:5,        // 자원 — 각기 다른 실패 경로를 가진다
   party:[],                      // 동승자 id (최대 SEATS)
   met:new Set(),                 // 만난 적 있는 동승자 (재등장 방지)
-  fate:{},                       // id -> 결말 태그 (엔딩 개별 문구)
+  fate:{},                       // id -> 배치 태그 (left/shore/died). 없으면 탑승 중 = coast
+  mark:{},                       // id -> 행적 표식 (deal/saved/blood). 배치와 별개로 덧붙는다
   flags:new Set(),               // 굵직한 선택들
   leg:0,                         // 지난 경유지 수
   hungry:0,                      // 연속 굶은 구간
@@ -113,12 +120,27 @@ function J(w, pair){
 const clamp = (v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 function res(k,d){ S[k]=clamp(S[k]+d, 0, 99); }
 
+/* ── 인물별 작별. 공용 한 벌로 처리하면 열 살 아이가 하오체를 쓴다.
+   준은 대사가 없다 — 침묵이 그의 말이다. ── */
+const PARTING = {
+  dohyeon:['said','“…엔진 소리 좀 들어 두쇼. 이상해지면 바로 세우고.”'],
+  eunwoo:['said','“…상자는 두고 갈게요.”'],
+  hanna:['said','“…열 오르면 손등 말고 손바닥으로 짚어요.”'],
+  jun:[null,'준은 아무 말도 하지 않았다. 문을 닫는 손이 조용했다.']
+};
+const LASTWORD = {
+  dohyeon:['said','“…기름은 아껴 쓰쇼.”'],
+  eunwoo:['said','“…아저씨. 배는… 정말 있어요?”'],
+  hanna:['said','“…내 가방, 버리지 말아요.”'],
+  jun:[null,'준은 눈을 뜬 채였다. 앞을 보는 버릇이 마지막까지 남았다.']
+};
+
 /* ── 동승자. trait는 실제 기계 효과가 있어야 한다(죽은 특성 금지). ── */
 const COMP = {
   dohyeon:{ name:'도현', tag:'늙은 정비공',
     trait:'기름 냄새를 안다 — 주유 성공이 잦고 덤이 붙는다' },
   eunwoo:{ name:'은우', tag:'혼자 남은 아이',
-    trait:'함께 있으면 사람들의 손이 덜 떨린다 — 희망이 잘 깎이지 않는다' },
+    trait:'함께 있으면 사람들의 손이 덜 떨린다 — 대신 두고 오는 것마다 더 아프다' },
   hanna:{ name:'한나', tag:'떠도는 의사',
     trait:'한 번은, 죽을 자리에서 사람을 끌어낸다' },
   jun:{ name:'준', tag:'탈영한 군인',
@@ -169,6 +191,9 @@ function show(nodes, choices){
     ACTS.appendChild(b);
   }
   try{ scrollTo(0,0); }catch(e){}
+  // 화면이 통째로 갈리므로 포커스가 body로 떨어진다. 새 본문으로 옮겨야
+  // 키보드 탐색이 버튼 바로 앞에서 재개되고 스크린리더가 새 씬을 읽는다.
+  try{ MAIN.focus(); }catch(e){}
 }
 function crash(e){
   S.over=true;
@@ -187,7 +212,7 @@ function boot(){
     ['hd','마지막 국도'],
     [null,'바다가 죽고 하늘이 내려앉은 지 여러 해. 내륙에는 더 남은 것이 없다.'],
     [null,'북쪽 항구에서 배가 한 척 떠난다는 말을 들었다. 마지막 배라고 했다. 소문일지도 모른다.'],
-    ['sp','차는 나 하나를 위한 것이 아니다. 자리가 셋 남았다. 그것이 문제의 전부다.'],
+    ['sp','차는 나 하나를 위한 것이 아니다. 뒷좌석까지 세면 셋이다. 그 이상은 세어지지 않는다.'],
   ], c);
   renderCodex();
 }
@@ -209,8 +234,10 @@ function leg(){
   if(S.over) return;
   if(S.dist<=0){ harbor(); return; }
   const enc = pickEnc();
-  S.used.add(enc.id);
+  // f()가 S.used로 '이번이 처음인가'를 판정하므로 소진 표시는 렌더 뒤에 한다.
+  // (앞에 두면 1회차 텍스트가 영영 안 뜬다. f()는 화면만 그리고 즉시 반환한다.)
   enc.f();
+  S.used.add(enc.id);
 }
 function onward(){ drive(); }
 function drive(){
@@ -230,6 +257,14 @@ function drive(){
       ['sp', S.party.length? '누군가의 숨소리가 밤새 고르지 않았다.' : '혼자라는 게 처음으로 다행이었다.']],
       [{k:'계속 간다',t:'',f:leg}]);
   }
+  // 희망이 바닥나면 부두는 비어 있다(harbor). 그 인과를 미리 산문에 심는다 —
+  // 안 심으면 '빈 부두'가 결과가 아니라 처벌로 읽힌다.
+  if(S.hope<=2){
+    return show([['hd',placeName()],
+      [null,'누가 먼저랄 것도 없이 북항 이야기가 끊겼다. 며칠째 아무도 그 말을 꺼내지 않는다.'],
+      ['sp','말하지 않는 것은 없는 것과 비슷해진다.']],
+      [{k:'계속 간다',t:'',f:leg}]);
+  }
   leg();
 }
 
@@ -244,7 +279,11 @@ function pickEnc(){
   // 초반엔 동승자 합류를, 후반엔 사건을 선호
   const weight = e => {
     let w = e.w || 1;
-    if(e.join && S.leg<=3 && S.party.length<SEATS) w += 3;
+    // 만석일 때 합류를 억제하면 이 게임의 심장(좌석 교환)을 대부분이 못 본다.
+    // 자리가 없을수록 오히려 사람이 나타나야 딜레마가 성립한다.
+    if(e.join) w += (S.party.length>=SEATS ? 4 : (S.leg<=3 ? 3 : 0));
+    // 연료가 남은 거리보다 모자라면 주유소를 만나기 쉬워진다. 판의 승패를 추첨에 맡기지 않는다.
+    if(e.id==='siphon' && S.fuel < S.dist) w += 3;
     if(e.late && S.dist<=3) w += 2;
     return w;
   };
@@ -263,11 +302,13 @@ function offerSeat(id, joinLine, refuseLine){
       S.party.push(id); res('hope', id==='eunwoo'?2:1);
       show([['hd','새 동승자'],[null,joinLine],
         ['note',`${c.name} — ${c.tag}`],
-        ['sp','자리가 하나 줄었다. 연료도 그만큼 빨리 준다.']],
+        ['sp','거울에 얼굴이 하나 늘었다. 셀 것이 하나 늘었다.']],
         [{k:'다시 길로',t:'',f:onward}]);
     }},
     {k:'그냥 지나친다', t:refuseLine, cls:'warn', f:()=>{
-      res('hope',-1);
+      // 거절을 희망으로 벌하면 아무도 안 태운 판이 붕괴로만 끝나 '홀로' 엔딩에 닿지 못한다.
+      // 값은 치르되 자원이 아니라 기억으로 치른다.
+      S.flags.add('refused_someone');
       show([['hd','지나침'],[null,refuseLine],
         ['sp','백미러에서 그 사람이 작아졌다. 이내 점이 되었다.']],
         [{k:'가속한다',t:'',f:onward}]);
@@ -282,13 +323,13 @@ function offerSeat(id, joinLine, refuseLine){
       S.party.push(id); res('hope',-2);
       show([['hd','자리 교환'],
         [null,`${COMP[pid].name}${J(COMP[pid].name,'은/는')} 오래 나를 보았다. 그러고는 문을 열고 내렸다.`],
-        ['said','“…여기까지 온 것도 어디요.”'],
+        PARTING[pid],
         ['sp','바꾼다는 건 한쪽을 버린다는 뜻이다. 나는 그걸 방금 배웠다.']],
         [{k:'출발한다',t:'',f:onward}]);
     }
   }));
   swap.push({k:`${c.name}${J(c.name,'을/를')} 두고 간다`, t:'자리가 없다. 그뿐이다.', f:()=>{
-    res('hope',-1);
+    S.flags.add('refused_someone');
     show([['hd','만석'],[null,'미안하다고 말하지 않았다. 그런 말은 이제 값이 없다.'],
       ['sp','자리는 셋뿐이었다. 처음부터 그랬다.']],
       [{k:'간다',t:'',f:onward}]);
@@ -304,29 +345,29 @@ const ENC = [
       [null,'멈춰 선 화물차 옆에서 노인이 손을 든다. 기름때 밴 손이다. 위협은 아니다.'],
       ['said','“정비를 좀 아오. 태워 주면 값은 하리다.”']],
       offerSeat('dohyeon',
-        '도현은 조수석에 앉자마자 계기판을 두드려 보았다. “이 차, 아직 멀리 가겠소.”',
+        '도현은 타자마자 계기판을 손등으로 두드려 보았다. “이 차, 아직 멀리 가겠소.”',
         '노인은 손을 내리지 않았다. 내가 멀어질 때까지.'));
   }},
   { id:'kid', join:true, when:()=>!S.met.has('eunwoo'), f:()=>{
     show([['hd',placeName()],
-      [null,'휴게소 자판기 뒤에 아이가 웅크려 있다. 열 살이나 되었을까. 혼자다.'],
+      [null,'휴게소 자판기 뒤에 아이가 웅크려 있다. 신발이 제 발보다 크다. 혼자다.'],
       ['said','“…아저씨도 북쪽 가요?”']],
       offerSeat('eunwoo',
         '은우는 상자를 꼭 끌어안고 탔다. 안에 무엇이 든지는 묻지 않았다.',
-        '아이는 울지 않았다. 우는 법을 잊은 얼굴이었다. 그게 더 오래 남았다.'));
+        '아이는 울지 않았다. 우는 법을 잊은 얼굴이었다.'));
   }},
   { id:'medic', join:true, when:()=>!S.met.has('hanna'), f:()=>{
     show([['hd',placeName()],
-      [null,'무너진 의원 앞, 한 여자가 낡은 왕진가방을 들고 서 있다. 눈이 맑다.'],
+      [null,'무너진 의원 앞에 여자가 서 있다. 가방을 든 손이 아니라 안 든 손이 깨끗하다.'],
       ['said','“나는 의사예요. 아직은. 당신들, 성한 사람 맞아요?”']],
       offerSeat('hanna',
-        '한나는 뒷좌석에서 우리 셋의 얼굴을 차례로 살폈다. 진찰이었다.',
-        '그 여자가 누군가의 목숨이었을 수도 있다. 나는 그 생각을 눌러 껐다.'));
+        '한나는 뒷좌석에서 우리 얼굴을 차례로 살폈다. 진찰이었다.',
+        '그 여자가 누군가의 목숨이었을 수도 있다. 나는 그 생각을 더 하지 않았다.'));
   }},
   { id:'soldier', join:true, when:()=>!S.met.has('jun'), f:()=>{
     show([['hd',placeName()],
       [null,'검문소 잔해에 군복 입은 사내가 앉아 있다. 계급장은 뜯겨 나갔다. 총은 내려놓았다.'],
-      ['said','“나는 도망친 놈이오. 그래도 앞은 뚫어 줄 수 있소.”']],
+      ['said','“나는 도망쳤습니다. 그래도 앞은 뚫습니다.”']],
       offerSeat('jun',
         '준은 말이 없었다. 다만 앞유리 너머를 나보다 먼저 읽었다.',
         '사내는 고개를 끄덕였다. 원망도 없이. 그런 얼굴이 더 무서웠다.'));
@@ -335,17 +376,19 @@ const ENC = [
   // ── 주유 (연료 보충) ── 반복 가능
   { id:'siphon', repeat:true, w:2, f:()=>{
     const skilled = aboard('dohyeon');
+    const again = S.used.has('siphon');   // 2회차부터는 같은 장면을 다시 틀지 않는다
     show([['hd',placeName()],
-      [null,'버려진 주유소. 탱크는 대개 말랐지만, 바닥에 조금은 남아 있곤 한다.'],
+      [null, again ? '또 주유소다. 이번엔 지붕이 없다. 탱크 뚜껑이 이미 열려 있었다.'
+                   : '버려진 주유소. 탱크는 대개 말랐지만, 바닥에 조금은 남아 있곤 한다.'],
       [null, skilled ? '도현이 벌써 호스를 물고 있다. “이런 건 나한테 맡기쇼.”'
                      : '호스를 밀어 넣는다. 냄새가 지독하다. 잘못하면 불이 붙는다.']],
       [{k:'뽑는다',t: skilled?'도현이 있으면 실수가 적다.':'연료를 얻는다. 운이 나쁘면 대가가 있다.', f:()=>{
         let g = 2 + (skilled?1:0);
         const bad = !skilled && Math.random()<0.3;
         res('fuel', g);
-        const n=[['hd','주유'],[null,`녹슨 탱크에서 ${g}만큼을 건졌다.`]];
+        const n=[['hd','주유'],[null,`호스 끝에서 기름이 왔다. 미지근했다.`]];
         if(bad){ res('food',-1); n.push([null,'급히 하다 상자 하나를 흘렸다. 식량 하나를 잃었다.']); }
-        n.push(['sp', skilled?'도현이 손을 닦으며 씩 웃었다.':'연료계 바늘이 조금 올라갔다. 그거면 됐다.']);
+        n.push(['sp', skilled?'도현이 손을 닦았다. 걸레가 원래 무슨 색이었는지는 모르겠다.':'바늘이 눈금 하나를 넘었다. 넘은 만큼만 더 간다.']);
         show(n,[{k:'다시 길로',t:'',f:onward}]);
       }},
       {k:'그냥 간다',t:'냄새가 마음에 걸린다.',f:onward}]);
@@ -353,19 +396,26 @@ const ENC = [
 
   // ── 식량 (도덕) ──
   { id:'pantry', repeat:true, w:2, f:()=>{
+    const again = S.used.has('pantry');
     show([['hd',placeName()],
-      [null,'약탈당한 가게. 선반 뒤에 통조림 몇 개가 남아 있다. 누군가 숨겨 둔 것이다.'],
-      [null,'벽에 서툰 글씨. “돌아올게. 손대지 마요.”']],
-      [{k:'가져간다',t:'식량을 얻는다. 그 사람은 돌아오지 못할 것이다.',cls:'warn',f:()=>{
+      ...(again
+        ? [[null,'또 약탈당한 가게다. 선반 뒤에 통조림 몇 개. 이번 벽에는 아무것도 적혀 있지 않다.'],
+           ['sp','글씨를 남길 사람도 없었던 모양이다.']]
+        : [[null,'약탈당한 가게. 선반 뒤에 통조림 몇 개가 남아 있다. 누군가 숨겨 둔 것이다.'],
+           [null,'벽에 서툰 글씨. “돌아올게. 손대지 마요.”']])],
+      [{k:'가져간다',t: again?'식량을 얻는다. 이번엔 망설이지 않는다.':'식량을 얻는다. 그 사람은 돌아오지 못할 것이다.',cls:'warn',f:()=>{
         res('food',2); res('hope',-1); S.flags.add('took_stash');
-        show([['hd','약탈'],[null,'통조림 두 개를 챙겼다. 글씨를 다시 보지 않았다.'],
+        show([['hd','약탈'],
+          [null, again ? '통조림 두 개를 챙겼다. 두 번째는 손이 빨랐다.'
+                       : '통조림 두 개를 챙겼다. 글씨를 다시 보지 않았다.'],
           ['sp','산 자는 죽은 자의 것을 먹는다. 그렇게 산다.']],
           [{k:'나선다',t:'',f:onward}]);
       }},
-      {k:'남겨 둔다',t:'그 약속을 지워 버리고 싶지 않다.',f:()=>{
+      {k:'남겨 둔다',t: again?'누구 것인지 모르는 채로 둔다.':'그 약속을 지워 버리고 싶지 않다.',f:()=>{
         res('hope',1);
-        show([['hd','그냥 나옴'],[null,'선반을 원래대로 두었다. 배는 여전히 고프다.'],
-          ['sp','지킬 수 없는 약속이라도, 누군가는 그걸 남겨 둬야 한다.']],
+        show([['hd','빈손'],[null,'선반을 원래대로 두었다. 배는 여전히 고프다.'],
+          ['sp', again ? '주인이 없는 물건은 없다. 아직 안 왔을 뿐이다.'
+                       : '글씨를 쓴 손은 아직 어딘가에서 걷고 있을 것이다.']],
           [{k:'나선다',t:'',f:onward}]);
       }}]);
   }},
@@ -379,12 +429,12 @@ const ENC = [
         ['sp','길은 공짜였던 적이 없다. 이제는 값을 기름으로 친다.']]);
     }});
     if(aboard('jun')) c.push({k:'준이 앞을 뚫는다',t:'아무것도 잃지 않는다. 대신 희망 2.',cls:'warn',f:()=>{
-      res('hope',-2); S.flags.add('jun_blood'); S.fate.jun='blood';
+      res('hope',-2); S.flags.add('jun_blood'); S.mark.jun='blood';
       done([['hd','돌파'],[null,'준이 차에서 내렸다. 오래 걸리지 않았다. 다시 탔을 때 그의 손을 아무도 보지 않았다.'],
         ['sp','앞은 뚫렸다. 그날 밤 차 안은 조용했다.']]);
     }});
     if(aboard('dohyeon')) c.push({k:'도현이 저들의 차를 고쳐 준다',t:'통행료 대신 손을 빌려준다.',f:()=>{
-      res('hope',1); S.fate.dohyeon='deal';
+      res('hope',1); S.mark.dohyeon='deal';
       done([['hd','거래'],[null,'도현이 저들의 발전기를 손봐 주었다. 우두머리가 처음으로 웃었다.'],
         ['said','“…노인 양반, 당신 같은 사람이 더 있으면 좋겠소.”'],
         ['sp','기름 대신 손을 내주고 지났다. 드문 밤이었다.']]);
@@ -392,7 +442,7 @@ const ENC = [
     c.push({k:'왔던 길로 돌아 우회한다',t:'구간을 되돌린다(북항까지 +1).',cls:'warn',f:()=>{
       S.dist += 1;
       done([['hd','우회'],[null,'핸들을 돌렸다. 힘겹게 얻은 거리를 하루치 반납한다.'],
-        ['sp','돌아가는 길은 늘 더 멀게 느껴진다.']]);
+        ['sp','같은 전봇대를 두 번 지났다. 두 번째엔 세지 않았다.']]);
     }});
     show([['hd',placeName()],
       [null,'무장한 자들이 드럼통으로 길을 막았다. 대여섯. 총구는 아직 땅을 본다.'],
@@ -405,15 +455,16 @@ const ENC = [
     show([['hd',placeName()],
       [null,'지평선이 검게 부풀어 오른다. 잿바람이다. 몇 시간이면 시야가 사라진다.']],
       [{k:'차를 세우고 버틴다',t:'안전하다. 대신 하루를 잃는다(북항까지 +1).',f:()=>{
-        S.dist += 1; res('hope', aboard('eunwoo')?0:-0);
+        // 갇힌 밤은 희망을 깎는다. 은우가 있으면 안 깎인다 — 그 애의 특성이 발현하는 세 번째 자리.
+        S.dist += 1; res('hope', aboard('eunwoo') ? 0 : -1);
         show([['hd','대피'],[null,'창을 테이프로 막고 웅크렸다. 잿가루가 문틈으로 스몄다.'],
-          ['sp','기다림도 전진의 일부라고, 누군가 말했었다. 그게 사실이길.']],
+          ['sp','잿가루가 문틈까지 한 줌 들어왔다. 밖은 그보다 훨씬 깊었을 것이다.']],
           [{k:'바람이 지나면 나선다',t:'',f:onward}]);
       }},
       {k:'헤드라이트로 뚫는다',t:'거리를 지킨다. 연료 2를 태운다.',cls:'warn',off:S.fuel<2,f:()=>{
         res('fuel',-2);
         show([['hd','강행'],[null,'전조등 두 줄기에 의지해 폭풍 속을 기었다. 엔진이 잿가루를 삼키며 앓았다.'],
-          ['sp','앞이 보이지 않아도 앞으로는 갔다. 그거면 됐다.']],
+          ['sp','속도계만 보고 달렸다. 국도가 아직 아래에 있다는 것만 알았다.']],
           [{k:'빠져나온다',t:'',f:onward}]);
       }}]);
   }},
@@ -446,18 +497,21 @@ const ENC = [
 
   // ── 병 (의사 특성이 결정적으로 쓰이는 자리) ──
   { id:'sick', w:1, when:()=>S.leg>=3 && S.party.length>0, f:()=>{
-    const victim = S.party[S.party.length-1];
+    // 마지막 탑승자로 고정하면 보이지 않는 규칙이 되고, 한나가 마지막일 때
+    // 의사를 태운 보람이 탑승 순서 때문에 사라진다. 한나는 앓지 않는다.
+    const pool = S.party.filter(id=>id!=='hanna');
+    const victim = (pool.length ? pool : S.party)[Math.floor(Math.random()*(pool.length||S.party.length))];
     const vn = COMP[victim].name;
     show([['hd',placeName()],
       [null,`${vn}${J(vn,'이/가')} 밤새 열에 시달렸다. 아침이 되자 일어나지 못한다.`]],
       aboard('hanna') && victim!=='hanna'
       ? [{k:'한나가 밤새 곁을 지킨다',t:'의사가 있다. 끌어낼 수 있다.',f:()=>{
-          S.fate.hanna='saved'; res('hope',1);
+          S.mark.hanna='saved'; res('hope',1);
           show([['hd','회복'],[null,`한나가 가방을 다 비웠다. 동이 틀 무렵 ${vn}${J(vn,'이/가')} 눈을 떴다.`],
-            ['sp','의사가 있다는 건 이런 뜻이었다. 한 번은, 죽을 자리에서 사람을 꺼낸다.']],
+            ['sp','한나는 그러고도 제 손부터 씻었다. 씻을 물이 아까운 밤이었다.']],
             [{k:'다시 길로',t:'',f:onward}]);
         }}]
-      : [{k:'약을 찾아 헤맨다',t:'약이 있을지 모른다. 반나절과 운을 건다.',f:()=>{
+      : [{k:'약을 찾아 헤맨다',t:'절반의 확률로 살린다. 실패하면 잃는다.',cls:'warn',f:()=>{
           const luck = Math.random()<0.5;
           if(luck){ res('hope', -1);
             show([['hd','간신히'],[null,`무너진 약국에서 해열제를 찾았다. ${vn}${J(vn,'은/는')} 이틀을 앓고 일어섰다.`],
@@ -466,17 +520,30 @@ const ENC = [
           } else {
             S.party = S.party.filter(x=>x!==victim); S.fate[victim]='died'; res('hope',-2);
             show([['hd','묻는다'],[null,`${vn}${J(vn,'은/는')} 새벽에 조용해졌다. 국도 옆, 얕게 팠다.`],
-              ['said', victim==='eunwoo' ? '“…아저씨. 배는… 정말 있어요?”' : '“…먼저 가 있겠소.”'],
+              LASTWORD[victim],
               ['sp','자리가 하나 비었다. 채우고 싶지 않은 자리였다.']],
               [{k:'남은 길로',t:'',f:onward}]);
           }
         }},
-        {k:'차에서 재우며 계속 간다',t:'멈추지 않는다. 희망 2.',cls:'warn',f:()=>{
-          res('hope',-2);
+        {k:'차에서 재우며 계속 간다',t:'아무도 잃지 않는다. 희망 2와 식량 1.',f:()=>{
+          res('hope',-2); res('food',-1);   // 대가가 없으면 룰렛이 선택이 아니라 함정이 된다
           show([['hd','강행군'],[null,`${vn}${J(vn,'을/를')} 뒷좌석에 눕힌 채 달렸다. 아무도 라디오를 켜지 않았다.`],
-            ['sp','멈추면 더 잃을 것 같았다. 멈추지 않아서 잃은 것도 있었을 것이다.']],
+            ['sp','멈추면 더 잃는다고 스스로에게 말했다. 멈추지 않고도 잃었다.']],
             [{k:'간다',t:'',f:onward}]);
         }}]);
+  }},
+
+  // ── 라디오 (희망 → 배의 존재를 잇는 전조. 자원 소모 0) ──
+  { id:'radio', late:true, w:2, when:()=>S.dist<=3, f:()=>{
+    const alive = S.hope>=3;
+    show([['hd',placeName()],
+      [null,'밤에 차를 세우고 다이얼을 천천히 돌렸다. 오래 안 하던 일이다.'],
+      ...(alive
+        ? [[null,'잡음 사이로 짧은 신호가 지나갔다. 사람 목소리는 아니었지만 사람이 켠 것이었다.'],
+           ['sp','아직 누군가 송신하고 있다. 북항이 아직 거기 있다는 뜻으로 들었다.']]
+        : [[null,'잡음뿐이었다. 며칠째 잡음뿐이다.'],
+           ['sp','언제부터 아무도 그 이야기를 하지 않았는지 기억나지 않는다.']])],
+      [{k:'다이얼을 끈다',t:'',f:onward}]);
   }},
 
   // ── 초록 골짜기 (되돌아감 엔딩의 입구) ── 후반부만
@@ -488,7 +555,9 @@ const ENC = [
       [{k:'여기 남는다',t:'배는 잊는다. 지금 있는 사람들과, 여기서.',f:()=>{ end('turnback'); }},
       {k:'북항으로 계속 간다',t:'소문이라도 확인해야 한다.',cls:'warn',f:()=>{
         S.flags.add('passed_valley'); res('hope', aboard('eunwoo')?-1:0);
-        show([['hd','떠남'],[null,'골짜기가 백미러에서 멀어진다. 은우가 있었다면, 그 애는 뒤를 오래 보았을 것이다.'],
+        show([['hd','떠남'],[null, aboard('eunwoo')
+            ? '골짜기가 백미러에서 멀어진다. 은우는 무릎으로 돌아앉아 뒤를 보았다. 한참을 그러고 있었다.'
+            : '골짜기가 백미러에서 멀어진다. 연기가 한 줄, 오래 곧게 올라갔다.'],
           ['sp','소문을 좇아 확실한 것을 버렸다. 그게 옳았는지는 바다가 말해 줄 것이다.']],
           [{k:'북쪽으로',t:'',f:onward}]);
       }}]);
@@ -498,7 +567,7 @@ const ENC = [
 const FALLBACK = { id:'road', repeat:true, f:()=>{
   show([['hd',placeName()],
     [null,'한동안 아무 일도 없었다. 국도만 있었다. 그것도 나쁘지 않았다.'],
-    ['sp','좋은 소식은 아무 일도 없는 날이다.']],
+    ['sp','백미러에 아무것도 없었다. 그것도 하루치는 된다.']],
     [{k:'계속 간다',t:'',f:onward}]);
 }};
 
@@ -539,19 +608,26 @@ const EPI = {
   dohyeon:{ coast:'도현은 갑판 난간에 기대 엔진 소리를 들었다. “좋은 배요. 오래 가겠소.”',
     shore:'도현은 부두에 남아 손을 흔들었다. “배는 내가 봐 줄 필요가 없지. 잘 가쇼.”',
     left:'도현을 국도에 내려놓은 일을 나는 오래 셈했다. 셈이 맞은 적은 없다.',
-    died:'도현의 손은 마지막까지 기름때가 배어 있었다.', deal:'', blood:'' },
+    died:'도현의 손은 마지막까지 기름때가 배어 있었다.' },
   eunwoo:{ coast:'은우는 뱃머리에 서서 처음으로 바다를 보았다. 상자를 그제야 내려놓았다.',
-    shore:'은우를 배에 태우고 나는 부두에 남았다. 그 애가 뒤돌아보지 않게, 손을 늦게 흔들었다.',
+    shore:'은우는 부두에서 상자를 고쳐 안았다. 뒤돌아보지 않은 건 그 애가 아니라 나였다.',
     left:'은우를 내려놓은 자리를 나는 지도에서 지웠다. 보지 않으려고.',
     died:'은우가 안고 있던 상자에는 크레용과, 누군가의 사진이 있었다.' },
   hanna:{ coast:'한나는 갑판에서도 사람들의 얼굴을 살폈다. 그건 이제 버릇이 아니라 그냥 그 사람이었다.',
     shore:'한나는 부두에 남겠다고 했다. “아픈 사람은 여기도 있어요.” 말릴 수 없었다.',
     left:'한나를 두고 온 뒤, 누군가 열이 오를 때마다 그 여자를 생각했다.',
-    died:'한나는 남을 살리는 사람이었다. 자기 차례엔 아무도 없었다.', saved:'' },
+    died:'한나는 남을 살리는 사람이었다. 자기 차례엔 아무도 없었다.' },
   jun:{ coast:'준은 배 뒤편에 앉아 처음으로 총을 물에 던졌다. 아무 말도 하지 않았다.',
     shore:'준은 부두에 남아 배가 떠나는 쪽을 등지고 섰다. 앞을 뚫는 건 그의 몫이 아니게 되었다.',
     left:'준을 내려놓았다. 그는 원망하지 않았다. 그런 사람이었다.',
-    died:'준은 앞을 뚫다 뚫리지 않는 것을 만났다.', blood:'준의 손을 나는 끝내 보지 못했다. 보지 않아 주는 것이 예의였다.' }
+    died:'준은 앞을 뚫다 뚫리지 않는 것을 만났다.' }
+};
+/* 행적 표식 — 배치 문구를 대체하지 않고 뒤에 덧붙는다.
+   (한때 EPI에 빈 문자열로 섞여 있어, 가장 인간적인 선택을 한 인물이 엔딩에서 통째로 사라졌다.) */
+const MARK = {
+  dohyeon:{ deal:'도현은 남의 발전기를 고쳐 준 이야기를 두 번 했다. 두 번 다 값을 안 받은 대목에서 웃었다.' },
+  hanna:{ saved:'한나는 그날 밤 이야기를 하지 않았다. 가방은 그때부터 가벼웠다.' },
+  jun:{ blood:'준의 손을 나는 끝내 보지 못했다. 보지 않아 주는 것이 예의였다.' }
 };
 const ENDINGS = {
   together:{ key:'together', title:'함께', grade:'좋음' },
@@ -562,21 +638,24 @@ const ENDINGS = {
   collapse:{ key:'collapse', title:'흩어짐', grade:'멈춤' },
   empty:{ key:'empty', title:'빈 부두', grade:'소문' },
 };
-function partyLines(){   // 배에 오른/남은 사람들의 개별 문구
+function partyLines(){   // 배에 오른/남은 사람들의 개별 문구 — 배치 한 줄 + 행적이 있으면 한 줄 더
   const out=[];
+  // 인용부호가 든 줄만 said(대사)로. 나머지는 화자의 서술이다.
+  const put = t => { if(t) out.push([/[“"]/.test(t) ? 'said' : null, t]); };
   for(const id of CID){
     const f = S.fate[id] || (aboard(id) ? 'coast' : null);
     if(!f) continue;
-    const line = (EPI[id]||{})[f];
-    if(line) out.push(['said', line]);
+    put((EPI[id]||{})[f]);
+    put((MARK[id]||{})[S.mark[id]]);
   }
   return out;
 }
 /* 길 위의 굵직한 선택이 결말에 메아리친다. 설정만 하고 안 읽는 플래그를 두지 않는다. */
 function echoes(){
   const out=[];
-  if(has('took_stash')) out.push([null,'벽에 적힌 그 약속을, 나는 아직도 다 지우지 못했다.']);
-  if(has('kind_stranger')) out.push([null,'이름도 모르는 사람을 한 번 태웠던 일을 가끔 떠올린다. 밑질 것도 없었다.']);
+  if(has('took_stash')) out.push([null,'돌아오겠다던 사람은 지금쯤 그 선반 앞에 섰을 것이다.']);
+  if(has('kind_stranger')) out.push([null,'그 사람은 끝내 이름을 말하지 않았다. 나도 끝내 묻지 않았다.']);
+  if(has('refused_someone')) out.push([null,'백미러에서 작아지던 사람들이 있다. 그 얼굴들은 잘 떠오르지 않는다. 손만 떠오른다.']);
   if(has('passed_valley')) out.push([null,'골짜기를 그냥 지나쳤다. 거기 남았다면 어땠을까는, 이제 묻지 않는다.']);
   return out;
 }
@@ -589,16 +668,16 @@ function end(key, extra){
       n=[['hd','함께'],
         [null,'배가 부두를 밀어냈다. 잿빛 물이 갈라진다. 뒤로 국도가, 내륙이, 소문이 멀어진다.'],
         ...partyLines()];
-      if(extra) n.push([null,`${COMP[extra].name}${J(COMP[extra].name,'은/는')} 부두에 남았다. 자리는 늘 하나가 모자랐다.`]);
+      if(extra) n.push([null,'선원이 접었던 손가락이 그 자리에 있었다.']);
       n.push(...echoes());
-      n.push(['sp','살아남는 것과 사람으로 남는 것은 같지 않았다. 나는 둘 다 조금씩만 해냈다.']);
+      n.push(['sp','배 위에서 나는 아직 사람 수를 세고 있었다. 세지 않아도 되는데 세었다.']);
       break; }
     case 'gaveseat':
       n=[['hd','빈자리'],
         [null,'그들을 다 태웠다. 밧줄이 풀리고, 배가 멀어진다. 나는 부두에 남았다.'],
         ...partyLines(), ...echoes(),
         [null,'누군가는 국도를 기억할 것이다. 자리를 세던 밤들을.'],
-        ['sp','내 자리는 처음부터 그들을 위한 것이었는지도 모른다. 그렇게 생각하니 견딜 만했다.']];
+        ['sp','배가 수평선에 닿을 때까지 세었다. 하나도 모자라지 않았다.']];
       break;
     case 'alone':
       n=[['hd','홀로'],
@@ -606,7 +685,7 @@ function end(key, extra){
           ? '배에 올랐다. 자리는 넉넉했다. 아무도 남지 않았으니까.'
           : '배에 올랐다. 데려올 사람이 하나도 남지 않았다.'],
         ...echoes(),
-        ['sp','바다는 넓고, 나는 가볍다. 이 가벼움이 오래 무거울 것이다.']];
+        ['sp','선원이 손가락을 펴지 않았다. 셀 것이 없었으니까.']];
       break;
     case 'turnback':
       n=[['hd','골짜기'],
@@ -617,7 +696,10 @@ function end(key, extra){
     case 'stranded':
       n=[['hd','좌초'],
         [null,'연료계 바늘이 바닥에 눕는다. 엔진이 두어 번 기침하고 멎었다. 국도 한복판, 사방은 소금 평원.'],
-        S.party.length?['said','“…걸어서라도 가요, 우리.”']:[null,'걸어서는 닿지 못한다. 그건 우리 모두 알았다.'],
+        !S.party.length ? [null,'걸어서는 닿지 못한다. 그건 나도 알았다.']
+          : aboard('dohyeon') ? ['said','“…내가 못 고치는 건 처음이오.”']
+          : aboard('eunwoo') ? ['said','“…걸어서 가면 안 돼요?”']
+          : ['said','“…여기서 자면 아침에 못 일어납니다.”'],
         ['sp','북항까지 얼마 남았는지는 이제 중요하지 않다. 차가 서면 국도도 끝난다.']];
       break;
     case 'collapse':
@@ -629,8 +711,11 @@ function end(key, extra){
     case 'empty':
       n=[['hd','빈 부두'],
         [null,'국도가 끝나고 부두가 나온다. 배는 없다. 밧줄 자국만 남은 말뚝, 식은 모닥불, 발자국들.'],
-        [null, S.party.length?'일행이 나를 보았다. 나는 볼 것을 잃었다.':'혼자 서서, 오래 물을 보았다.'],
-        ['sp','소문은 소문이었다. 그래도 여기까지 오는 길에 있었던 것들은, 소문이 아니었다.']];
+        [null, S.party.length?'일행이 나를 보았다. 나는 물만 보았다.':'혼자 서서, 오래 물을 보았다.'],
+        [null,'배는 있었을 것이다. 우리가 그 이야기를 그만둔 어느 밤에 떠났을 것이다.'],
+        ...echoes(),
+        ...partyLines(),
+        ['sp','소문은 소문이 되고 나서야 소문이었다. 그때까지는 우리가 가진 전부였다.']];
       break;
   }
   const e = ENDINGS[key];
@@ -643,7 +728,7 @@ function record(key){
   const codex = seen();
   const total = Object.keys(ENDINGS).length;
   const list = Object.values(ENDINGS).map(e=>
-    codex.has(e.key) ? `<b>${e.title}</b>` : `<span class="lock">${e.title}</span>`
+    codex.has(e.key) ? `<b>${e.title}</b>` : `<span class="lock">???</span>`
   ).join(' · ');
   const took = CID.filter(id=>S.met.has(id)).map(id=>COMP[id].name);
   show([

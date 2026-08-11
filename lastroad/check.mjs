@@ -45,6 +45,29 @@ ok('양자택일 조사 표기가 없다 (받침 판별 J()로 처리 — 한국
   assert.match(js, /function J\(w, pair\)/, '조사 헬퍼 J()가 사라졌다');
 });
 
+ok('수치가 같은 no-op 삼항이 없다 (항상-참 게이트 — 문자열 검사가 놓치는 형태)', () => {
+  // res('hope', aboard('eunwoo')?0:-0) 같은 코드는 '특성이 쓰인다' 검사를 통과하면서
+  // 실제로는 아무것도 하지 않는다. 창귀록 hasYugo와 같은 죽은 게이트다.
+  const noops = [...js.matchAll(/\?\s*(-?\d+(?:\.\d+)?)\s*:\s*(-?\d+(?:\.\d+)?)/g)]
+    .filter(m => Number(m[1]) === Number(m[2])).map(m => m[0]);
+  assert.deepEqual(noops, [], `양 분기 값이 같은 삼항: ${noops.join(', ')}`);
+});
+
+ok('숨김이 필요한 HUD가 CSS 특정도에 지지 않는다', () => {
+  // #hud(1,0,0)는 UA의 [hidden]{display:none}(0,1,0)을 이긴다.
+  // paint()가 HUD.hidden을 세워도 명시 규칙이 없으면 화면에 남는다.
+  const css = html.slice(html.indexOf('<style>'), html.indexOf('</style>'));
+  assert.match(css, /#hud\[hidden\]\s*\{[^}]*display:\s*none/,
+    'HUD.hidden이 무효가 된다 — 표지/엔딩에 HUD가 남아 서사와 모순된다');
+  assert.match(js, /HUD\.hidden\s*=\s*true/, 'paint()가 HUD를 숨기려는 시도 자체가 사라졌다');
+});
+
+ok('한글 본문에 합성 이탤릭을 쓰지 않는다 (한국어 타이포 폴리시)', () => {
+  const css = html.slice(html.indexOf('<style>'), html.indexOf('</style>'));
+  assert.doesNotMatch(css, /font-style:\s*italic/,
+    '한글엔 이탤릭 자족이 없어 브라우저가 네모틀을 밀어 그린다 — 색/여백으로 구분하라');
+});
+
 ok('설정한 플래그는 모두 어딘가에서 읽힌다 (죽은 상태 금지 — 창귀록 gukVisited 교훈)', () => {
   const set = [...js.matchAll(/S\.flags\.add\('(\w+)'\)/g)].map(m => m[1]);
   assert.ok(set.length >= 3, `플래그가 ${set.length}개 — 정규식을 확인하라`);
@@ -229,6 +252,69 @@ ok('일곱 엔딩이 모두 도달 가능하다 (죽은 분기 0)', () => {
   for (const k of want) assert.ok(hit.has(k), `엔딩 '${k}'에 도달하지 못했다 — 죽은 분기`);
 });
 
+/* ── 주입이 아니라 '플레이'로 도달하는가 ──
+   상태를 직접 주입한 도달성은 증명이 아니다. 창귀록의 pansaEdge가 죽은 가지 위에서
+   테스트를 통과했듯, alone은 hope>=3 + 무동승을 동시에 요구해 실제 플레이로는
+   0.0%였는데 주입 테스트만 통과했다. 정책을 정해 끝까지 눌러 본다. */
+function play(policy, seed, maxStep = 200) {
+  const g = boot(seed);
+  let r = seed;
+  for (let step = 0; step < maxStep; step++) {
+    const bs = g.enabled();
+    if (!bs.length) break;
+    if (g.S().over) break;
+    const b = policy(bs, g.S()) || bs[(r = (r * 1103515245 + 12345) & 0x7fffffff) % bs.length];
+    try { b.onclick(); } catch (e) { return { crash: e.message, reached: g.reached() }; }
+  }
+  return { reached: g.reached(), S: g.S() };
+}
+const hit = (bs, re) => bs.find(b => re.test(b.innerHTML));
+
+ok('[플레이 도달] 아무도 태우지 않고 완주하면 홀로 엔딩에 닿는다', () => {
+  // 거절에 희망 페널티가 붙으면 이 경로는 전부 붕괴로 끝나 alone이 죽은 엔딩이 된다.
+  const go = bs => hit(bs, /지나친다|두고 간다/) || hit(bs, /뽑는다/) || hit(bs, /가져간다/)
+    || hit(bs, /북항으로 계속/) || hit(bs, /우회한다|버틴다/)
+    || hit(bs, /다이얼|계속 간다|다시 길로|나선다|가속한다|출발한다|북쪽으로|빠져나온다|간다$/)
+    || hit(bs, /배에 오른다/);
+  let alone = 0;
+  for (let s = 1; s <= 40; s++) if (play(go, s * 13 + 5).reached.has('alone')) alone++;
+  assert.ok(alone >= 8, `40판 중 ${alone}판만 alone — 실제 플레이로 닿지 않는 죽은 엔딩이다`);
+});
+
+ok('[플레이 도달] 연료를 챙기며 완주하면 대부분 항구에 닿는다 (좌초가 기본값이 아니다)', () => {
+  // 연료 원장이 적자면 판의 승패가 선택이 아니라 인카운터 추첨에 걸린다(전작 knife-edge).
+  const go = bs => hit(bs, /뽑는다/) || hit(bs, /태운다$|을 태운다|를 태운다/) || hit(bs, /가져간다/)
+    || hit(bs, /앞을 뚫는다|고쳐 준다/) || hit(bs, /헤드라이트/) || hit(bs, /내리고/)
+    || hit(bs, /북항으로 계속/)
+    || hit(bs, /다이얼|계속 간다|다시 길로|나선다|가속한다|출발한다|북쪽으로|빠져나온다|간다$/)
+    || hit(bs, /함께 간다/) || hit(bs, /배에 오른다/);
+  let arrived = 0;
+  for (let s = 1; s <= 40; s++) {
+    const R = play(go, s * 7 + 1).reached;
+    if (R.has('together') || R.has('gaveseat') || R.has('alone')) arrived++;
+  }
+  assert.ok(arrived >= 24, `40판 중 ${arrived}판만 항구 도달 — 연료 원장이 적자인지 확인하라`);
+});
+
+ok('[플레이 도달] 만석 좌석 교환이 실제 플레이에서 충분히 자주 열린다', () => {
+  // pickEnc가 만석일 때 합류를 억제하면 게임의 심장을 대부분이 못 본다.
+  const go = bs => hit(bs, /태운다$|을 태운다|를 태운다/) || hit(bs, /뽑는다/) || hit(bs, /가져간다/)
+    || hit(bs, /북항으로 계속/)
+    || hit(bs, /다이얼|계속 간다|다시 길로|나선다|가속한다|출발한다|북쪽으로|빠져나온다|간다$/);
+  let saw = 0;
+  for (let s = 1; s <= 60; s++) {
+    const g = boot(s * 7 + 1); let r = s, seen = false;
+    for (let step = 0; step < 200; step++) {
+      const bs = g.enabled(); if (!bs.length || g.S().over) break;
+      if (g.S().party.length >= 3 && bs.some(b => /내리고/.test(b.innerHTML))) { seen = true; break; }
+      const b = go(bs) || bs[(r = (r * 1103515245 + 12345) & 0x7fffffff) % bs.length];
+      try { b.onclick(); } catch (e) { break; }
+    }
+    if (seen) saw++;
+  }
+  assert.ok(saw >= 12, `60판 중 ${saw}판만 좌석 교환에 닿는다 — pickEnc의 join 가중을 확인하라`);
+});
+
 /* ── 좌석 교환(테마의 심장)이 실제로 작동하는가 ── */
 ok('만석에서 새 동승자를 태우면 한 명이 내려가고 좌석은 3을 넘지 않는다', () => {
   const g = boot(20);
@@ -242,6 +328,20 @@ ok('만석에서 새 동승자를 태우면 한 명이 내려가고 좌석은 3�
   assert.ok(S.party.length <= 3, `좌석이 ${S.party.length} — 3을 넘었다`);
   assert.ok(S.party.includes('eunwoo'), '은우가 타지 않았다');
   assert.equal(Object.values(S.fate).filter(v => v === 'left').length, 1, '내린 사람이 left로 기록되지 않았다');
+});
+
+ok('fate/mark 태그가 모두 실제 문구를 갖는다 (빈 문구 = 엔딩에서 인물 소실)', () => {
+  // 한때 EPI에 deal:''/saved:''가 있어, 발전기를 고쳐 주거나 사람을 살린 동승자가
+  // 엔딩에서 통째로 사라졌다. partyLines()의 if(line) 필터가 빈 문자열을 걸러냈기 때문이다.
+  const empties = [...js.matchAll(/(\w+):''/g)].map(m => m[1]);
+  const placements = [...js.matchAll(/S\.fate\[?\.?(?:\w+)\]?\s*=\s*'(\w+)'/g)].map(m => m[1]);
+  const marks = [...js.matchAll(/S\.mark\[?\.?(?:\w+)\]?\s*=\s*'(\w+)'/g)].map(m => m[1]);
+  for (const t of new Set([...placements, ...marks]))
+    assert.ok(!empties.includes(t), `태그 '${t}'가 빈 문구다 — 그 인물이 엔딩에서 사라진다`);
+  assert.ok(marks.length >= 3, `mark 태그가 ${marks.length}개 — deal/saved/blood 셋이어야`);
+  // 표식은 배치를 대체하지 않고 덧붙어야 한다
+  assert.match(js, /put\(\(MARK\[id\]\|\|\{\}\)\[S\.mark\[id\]\]\)/,
+    'partyLines()가 MARK를 배치 문구 뒤에 덧붙이지 않는다');
 });
 
 ok('[회귀] 엔딩마다 개별 문구가 서로 다르다 (동승자별 작별)', () => {
