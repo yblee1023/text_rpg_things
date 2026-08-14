@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>식죄자 食罪者</title>
+<style>
+  :root{
+    --bg:#0c0b0d; --ink:#d9d3c9; --dim:#8a8276; --line:#241f23;
+    --sp:#e3c98f; --said:#adbfc6; --see:#b9a3c4; --voice:#c98a76;
+    --warn:#c4874f; --chip:#1a171b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink)}
+  body{
+    font-family:"Nanum Myeongjo","Iowan Old Style",Georgia,"Noto Serif KR",serif;
+    line-height:1.78; font-size:17px; -webkit-text-size-adjust:100%;
+    background:radial-gradient(120% 80% at 50% -10%, #141118 0%, #0c0b0d 62%) fixed;
+  }
+  #wrap{max-width:680px;margin:0 auto;padding:18px 20px 96px;min-height:100vh}
+  #hud{
+    position:sticky;top:0;z-index:5;margin:-18px -20px 18px;padding:10px 20px;
+    background:rgba(12,11,13,.93);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);font-size:13px;color:var(--dim);
+    display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;
+    font-family:"Nanum Gothic",system-ui,sans-serif;letter-spacing:.02em
+  }
+  /* #hud는 ID(1,0,0)라 UA의 [hidden]{display:none}(0,1,0)을 이긴다. 명시적으로 되돌린다. */
+  #hud[hidden]{display:none}
+  #hud b{color:var(--ink);font-weight:600}
+  #hud .karma{flex-basis:100%;margin-top:2px;font-size:12px}
+  #hud .s{display:inline-block;margin-right:5px;padding:1px 7px;border-radius:11px;
+    background:var(--chip);border:1px solid #2b262e;color:#6d6570}
+  #hud .s.on{color:var(--see);border-color:#3c3345}
+  #hud .s.loud{color:var(--voice);border-color:#4a352e}
+  #hud .warn{color:var(--warn)}
+  #main>div{margin:0 0 14px;animation:f .45s ease both}
+  @keyframes f{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#main>div{animation:none}}
+  .hd{font-family:"Nanum Gothic",system-ui,sans-serif;font-size:14px;letter-spacing:.16em;
+    color:var(--dim);border-bottom:1px solid var(--line);padding-bottom:7px;margin-bottom:6px}
+  .hd.big{font-size:20px;color:var(--ink);letter-spacing:.3em;padding-bottom:12px}
+  /* 한글엔 이탤릭 자족이 없다. 색과 여백으로만 구분한다. */
+  .sp{color:var(--sp);margin-top:18px}
+  .said{color:var(--said);padding-left:14px;border-left:2px solid #2c3840}
+  .see{color:var(--see);padding-left:14px;border-left:2px solid #3a3145;font-size:16.5px}
+  .voice{color:var(--voice);padding-left:14px;border-left:2px solid #4a352e;font-size:16.5px}
+  .note{color:var(--dim);font-size:14.5px}
+  #acts{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+  button.act{
+    text-align:left;font:inherit;color:var(--ink);background:#141216;
+    border:1px solid var(--line);border-radius:8px;padding:12px 15px;cursor:pointer;
+    transition:border-color .15s,background .15s;line-height:1.5
+  }
+  button.act:hover{border-color:#413848;background:#181519}
+  button.act .k{font-family:"Nanum Gothic",system-ui,sans-serif;font-weight:700;letter-spacing:.02em}
+  button.act .t{display:block;color:var(--dim);font-size:14px;margin-top:2px}
+  button.act.warn{border-color:#463320} button.act.warn:hover{border-color:var(--warn)}
+  button.act.warn .k{color:var(--warn)}
+  button.act.gift{border-color:#3a3145} button.act.gift .k{color:var(--see)}
+  button.act[disabled]{opacity:1;background:#100f11;border-color:#1c191d;color:#6b6570;cursor:not-allowed}
+  button.act[disabled] .t{color:#5c575f}
+  #main:focus{outline:none}
+  button.act:focus-visible{outline:2px solid var(--sp);outline-offset:2px}
+  .codex{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);
+    font-family:"Nanum Gothic",system-ui,sans-serif;font-size:12.5px;color:var(--dim)}
+  .codex b{color:var(--ink)} .codex .lock{color:#6f6a74}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="hud" hidden></div>
+  <div id="main" tabindex="-1"></div>
+  <div id="acts"></div>
+</div>
+<script>
+/* 식죄자 食罪者 — 단일 파일 텍스트 RPG. 의존성 0, 빌드 0.
+
+   설계 원칙 (RPG의 최소 조건):
+   1. 캐릭터가 결과를 매개한다 — 죄(능력치)가 없으면 단서 줄이 화면에 아예 안 뜬다.
+      플레이어가 아는 것이 아니라 캐릭터가 무엇이냐가 판정을 바꾼다.
+   2. 캐릭터가 변한다 — 먹은 죄가 다음 판의 시야와 선택지를 바꾼다.
+   3. 폭은 저자가 아니라 시스템이 만든다 — 5죄 × 6상 × 게이트된 줄의 곱.
+   프로즈 제거 테스트: 어느 죄가 무거운지는 오직 산문에만 있다. 숫자로는 못 푼다.
+
+   전부 전역 스코프. 함수명이 API다. check.mjs가 grep한다. */
+
+const DEV = /[?#&]dev\b/.test(location.search + location.hash);
+const E = id => document.getElementById(id);
+const MAIN = E('main'), ACTS = E('acts'), HUD = E('hud');
+
+/* ── 조사: 받침에 맞는 형태를 고른다 ── */
+function J(w, pair){
+  const [a,b] = pair.split('/');
+  const s = w||'', c = s.charCodeAt(s.length-1);
+  return (c>=0xAC00 && c<=0xD7A3 && (c-0xAC00)%28!==0) ? a : b;
+}
+
+/* ── 다섯 죄. 각각 눈(지각)·손(선택)·목소리(간섭)를 갖는다. ── */
+const SEE_AT = 2, HAND_AT = 2, VOICE_AT = 3;
+const SIN = {
+  no: { name:'노', full:'노(怒)', eye:'폭력이 지나간 자리를 본다',
+        hand:'밀어붙인다', voice:'빨리 끝내라. 저것들은 어차피 너를 안 본다.' },
+  tam:{ name:'탐', full:'탐(貪)', eye:'없어진 것과 값을 본다',
+        hand:'흥정한다', voice:'저 그릇은 놋이다. 아무도 세지 않는다.' },
+  ae: { name:'애', full:'애(哀)', eye:'남은 사람의 속을 본다',
+        hand:'곁에 앉는다', voice:'조금만 더 앉아 있자. 일어나지 말자.' },
+  wi: { name:'위', full:'위(僞)', eye:'꾸민 말과 옮긴 자리를 알아본다',
+        hand:'떠본다', voice:'사실대로 말할 이유가 없다. 저들도 안 한다.' },
+  geop:{name:'겁', full:'겁(怯)', eye:'아직 방에 남은 것을 안다',
+        hand:'물러선다', voice:'문이 어디 있는지 세어 두어라. 두 걸음이다.' }
+};
+const SID = Object.keys(SIN);
+const KARMA_MAX = 15;   // 업이 이만큼 차면 침식된다
+
+/* ── 상태: INIT() 한 곳에서만 만든다 ── */
+function INIT(){ return {
+  sin:{no:0,tam:0,ae:0,wi:0,geop:0},
+  at:0,                 // 몇 번째 상인가
+  looked:[],            // 이번 상에서 살핀 것
+  rested:[],            // 편히 보낸 망자 id
+  wandering:[],         // 못 보낸 망자 id
+  flags:new Set(),
+  over:false, begun:false
+}; }
+let S = INIT();
+const SETS = ['flags'];
+
+const lv = k => S.sin[k]||0;
+const karma = () => SID.reduce((a,k)=>a+lv(k), 0);
+const sees = k => lv(k) >= SEE_AT;
+const hand = k => lv(k) >= HAND_AT;
+const loud = k => lv(k) >= VOICE_AT;
+const has = f => S.flags.has(f);
+function eat(k, n){ S.sin[k] = Math.min(9, lv(k) + n); }
+
+/* ══════════ 상(床) — 여섯 번의 죽음 ══════════
+   dominant: 이 사람에게 가장 무거웠던 것. 산문으로만 드러난다.
+   look[].tells: 그 죄를 가진 자에게만 보이는 줄. 없으면 화면에 아예 안 뜬다. */
+const CASES = [
+{ id:'bangat', place:'방앗간 — 첫눈', who:'방앗간 주인',
+  intro:[
+    [null,'눈이 처마를 넘긴 아침에 사람이 왔다. 말은 짧았다. 방앗간이라고만 했다.'],
+    [null,'주인은 들보에 목을 맸다. 내려놓은 지 하루가 지났고, 상은 벌써 차려져 있었다. 밥 한 그릇, 소금, 물.'],
+    ['said','“…빨리 좀 해 주시오. 사람들이 보고 있소.”'],
+  ],
+  dominant:'tam',
+  look:[
+    { k:'시신을 본다', base:'얼굴은 덮여 있었다. 손을 보았다. 손톱이 짧고 고르다. 일하던 손이다.',
+      tells:[{sin:'no',line:'목의 자국이 한 겹이다. 망설인 자국이 없다. 이 사람은 화가 나서 죽은 것이 아니다.'},
+             {sin:'ae',line:'손가락 마디가 다 굽어 있다. 오래 무언가를 쥐고 놓지 못한 손이다.'}] },
+    { k:'말과 되를 본다', base:'벽에 말과 되가 걸려 있다. 곡식 냄새가 아직 난다.',
+      tells:[{sin:'tam',line:'말의 밑바닥에 덧댄 나무가 있다. 얇게, 몇 해에 걸쳐. 되질할 때마다 손톱만큼씩 남겼다.'},
+             {sin:'wi',line:'걸린 자리가 이상하다. 오늘 누가 옮겨 걸었다.'}] },
+    { k:'장부를 본다', base:'궤에 장부가 있다. 글씨가 작고 빽빽하다.',
+      tells:[{sin:'tam',line:'마을 사람 이름 옆에 점이 찍혀 있다. 점이 많은 이름일수록 되가 적게 적혀 있다.'},
+             {sin:'ae',line:'마지막 장에 이름 하나가 여러 번 지워졌다 다시 적혔다. 제 아들 이름이다.'}] },
+    { k:'가족을 본다', base:'아내와 아들이 문가에 서 있다. 둘 다 나를 보지 않는다.',
+      tells:[{sin:'ae',line:'아내는 울지 않는다. 우는 법을 벌써 다 쓴 얼굴이다. 아들은 아버지 쪽을 한 번도 보지 않았다.'},
+             {sin:'wi',line:'아내가 아들 손목을 잡고 있다. 말리는 손이 아니라 붙드는 손이다.'}] },
+  ],
+  full:{tam:2, ae:1},
+  rest:'상을 물리자 방 안의 공기가 한 뼘 내려앉았다. 아내가 그제야 무릎을 접었다.',
+  unrest:'상은 그대로 남았다. 밥이 식어 굳는 동안 아무도 손대지 않았다.' },
+
+{ id:'yeogwan', place:'여관 — 이레째 눈', who:'이름 없는 나그네',
+  intro:[
+    [null,'고갯길 아래 여관. 나그네가 윗방에서 얼어 죽었다. 아궁이는 살아 있었는데 문을 안에서 잠갔다.'],
+    [null,'주인이 상을 차려 놓고 문턱 밖에 서 있다. 안으로는 들어오지 않는다.'],
+    ['said','“나는 이 사람 이름도 모르오. 그래도 상은 차려야 한다길래.”'],
+  ],
+  dominant:'wi',
+  look:[
+    { k:'시신을 본다', base:'옷이 좋다. 신은 닳았다. 옷과 신이 서로 다른 사람의 것 같다.',
+      tells:[{sin:'wi',line:'손바닥에 굳은살이 없다. 이 사람은 이 옷을 입을 만한 일을 한 적이 없다.'},
+             {sin:'geop',line:'죽을 때 문 쪽을 보고 있었다. 추워서 웅크린 것이 아니라 보려고 웅크렸다.'}] },
+    { k:'봇짐을 뒤진다', base:'봇짐이 가볍다. 갈아입을 것 한 벌, 마른 밥, 노끈.',
+      tells:[{sin:'tam',line:'속옷 안자락에 은전이 꿰매져 있다. 여기까지 오는 동안 한 번도 안 썼다.'},
+             {sin:'wi',line:'호패가 두 개다. 하나는 손때가 앉았고 하나는 새것이다. 새것의 이름이 그가 말한 이름이다.'}] },
+    { k:'주인에게 묻는다', base:'주인은 사흘 전에 들었다고 했다. 셈은 미리 치렀다고 했다.',
+      tells:[{sin:'wi',line:'주인이 사흘이라고 말할 때 눈이 위로 갔다. 사흘이 아니다. 더 오래 있었다.'},
+             {sin:'no',line:'주인의 오른손 관절이 부어 있다. 최근에 무언가를 쳤다.'}] },
+    { k:'방을 살핀다', base:'윗방은 좁다. 벽에 오래된 낙서가 여럿이다.',
+      tells:[{sin:'geop',line:'문고리에 노끈이 감겨 있었다. 안에서, 두 번 감아. 누가 오는 것을 막으려 했다.'},
+             {sin:'ae',line:'벽 낮은 곳에 글자를 쓰다 만 자국. 손가락으로 썼다. 사람 이름의 첫 자에서 멈췄다.'}] },
+  ],
+  full:{wi:2, geop:1},
+  rest:'문고리의 노끈이 저절로 풀렸다. 주인이 그제야 문턱을 넘어왔다.',
+  unrest:'그 방은 그 뒤로 세를 놓지 못했다. 문이 안에서 잠기는 밤이 있다고 했다.' },
+
+{ id:'daejang', place:'대장간 — 눈이 그친 날', who:'대장장이',
+  intro:[
+    [null,'대장장이가 제 망치에 맞아 죽었다. 손잡이가 부러졌고, 부러진 쪽이 이마에 닿았다고 했다.'],
+    [null,'불은 아직 살아 있다. 아무도 끄지 않았다. 상은 모루 위에 차려져 있다.'],
+    ['said','“…아버지가 그리 가실 분이 아닌데.”'],
+  ],
+  dominant:'no',
+  look:[
+    { k:'시신을 본다', base:'팔뚝이 굵다. 화상 자국이 층층이 앉았다. 이마의 상처는 하나뿐이다.',
+      tells:[{sin:'no',line:'주먹의 관절이 전부 뭉개져 있다. 쇠를 친 손이 아니다. 사람을 친 손이다. 오래.'},
+             {sin:'geop',line:'상처가 정면이다. 이 사람은 오는 것을 보고도 피하지 않았다.'}] },
+    { k:'벽을 본다', base:'연장이 벽에 걸려 있다. 자리마다 자국이 남아 반듯하다.',
+      tells:[{sin:'no',line:'벽 가운데가 움푹하다. 한 자리를 여러 해 쳤다. 연장으로가 아니라 주먹으로.'},
+             {sin:'wi',line:'망치 하나가 제 자리에 없다. 부러졌다는 그 망치는 자리에 걸려 있다.'}] },
+    { k:'아들을 본다', base:'아들이 풀무 옆에 서 있다. 열여섯이나 되었을까. 손이 크다.',
+      tells:[{sin:'ae',line:'아들이 상을 차렸다. 밥을 고봉으로 펐다. 살아서 그리 받아 본 적 없는 그릇이다.'},
+             {sin:'geop',line:'아들이 나와 두 걸음 거리를 지킨다. 내가 움직이면 그만큼 물러선다. 배운 거리다.'}] },
+    { k:'불을 본다', base:'화덕의 불이 아직 벌겋다. 누가 계속 지폈다.',
+      tells:[{sin:'ae',line:'밤새 지핀 불이다. 아들의 손등에 새 화상이 앉아 있다.'},
+             {sin:'no',line:'재 속에 쇠붙이가 여럿이다. 만들다 만 것들을 죄 부숴 넣었다.'}] },
+  ],
+  full:{no:2, ae:1},
+  rest:'화덕의 불이 그제야 사그라들었다. 아들이 풀무에서 손을 뗐다.',
+  unrest:'그 집에서는 밤마다 쇠 치는 소리가 났다. 아들은 그 소리를 듣고 자랐다.' },
+
+{ id:'umul', place:'우물집 — 얼음이 언 날', who:'우물집 안주인',
+  intro:[
+    [null,'안주인이 제 집 우물에 들었다. 봄에 아이를 잃은 집이다.'],
+    [null,'우물을 메우는 중이었다. 흙이 반쯤 찼을 때 사람을 건졌다고 했다.'],
+    ['said','“그 사람은 죄가 없소. 죄가 없는 사람도 상을 받아야 하오?”'],
+  ],
+  dominant:'ae',
+  look:[
+    { k:'시신을 본다', base:'옷을 여러 겹 껴입었다. 물에 오래 있었는데 얼굴이 편하다.',
+      tells:[{sin:'ae',line:'품에 아이 저고리가 있다. 물을 먹어 무겁다. 무거우라고 넣은 것이다.'},
+             {sin:'geop',line:'손톱이 다 깨져 있다. 들어간 뒤에 벽을 긁었다. 마음이 바뀐 순간이 있었다.'}] },
+    { k:'우물을 본다', base:'우물은 낮다. 어른 키 두 길쯤. 아이가 빠졌던 우물이다.',
+      tells:[{sin:'ae',line:'우물 턱이 한쪽만 닳았다. 누가 매일 같은 자리에 앉아 안을 들여다봤다.'},
+             {sin:'tam',line:'메우려고 부어 둔 흙이 좋은 흙이다. 밭에 넣을 것을 여기 부었다.'}] },
+    { k:'남편을 본다', base:'남편이 삽을 놓지 않는다. 손에 쥔 채로 말한다.',
+      tells:[{sin:'ae',line:'남편은 아내 쪽을 보지 않고 우물만 본다. 아내를 잃은 얼굴이 아니라 우물을 원망하는 얼굴이다.'},
+             {sin:'wi',line:'남편이 “봄에”라고 했다가 “여름에”라고 했다. 아이가 언제 빠졌는지를 헷갈린다. 헷갈릴 수 없는 날짜다.'}] },
+    { k:'집 안을 본다', base:'방이 정갈하다. 쓸고 닦은 지 얼마 안 됐다.',
+      tells:[{sin:'ae',line:'아이 자리가 그대로 깔려 있다. 이불이 개어져 있고, 벽 쪽에 작은 신발이 놓였다.'},
+             {sin:'wi',line:'다른 방 하나가 잠겨 있다. 새로 단 자물쇠다.'}] },
+  ],
+  full:{ae:2, geop:1},
+  rest:'우물 위로 김이 한 번 올랐다가 흩어졌다. 남편이 삽을 놓았다.',
+  unrest:'그 집 우물은 끝내 메워지지 않았다. 흙을 부으면 밤새 도로 내려앉았다.' },
+
+{ id:'sanyang', place:'너덜겅 — 눈이 다시 오는 날', who:'사냥꾼',
+  intro:[
+    [null,'사냥꾼이 산에서 얼어 죽어 실려 왔다. 같이 올라간 젊은 것은 살아 내려왔다.'],
+    [null,'마을에서는 젊은 것을 탓하는 눈치다. 상은 그 젊은 것이 차렸다.'],
+    ['said','“…내가 두고 온 게 아니오. 그 양반이 먼저 가라고 했소.”'],
+  ],
+  dominant:'geop',
+  look:[
+    { k:'시신을 본다', base:'다리 한쪽이 부러졌다. 부목을 제 손으로 댔다. 솜씨가 좋다.',
+      tells:[{sin:'geop',line:'부목을 대고도 한참을 기다린 자리가 있다. 눈이 몸 모양대로 눌려 있다. 올 사람을 기다렸다.'},
+             {sin:'no',line:'주먹으로 눈을 친 자국. 화가 나서가 아니라 손을 녹이려고.'}] },
+    { k:'젊은 것을 본다', base:'젊은 사냥꾼은 손이 떨린다. 동상이 왔다. 말은 또박또박한다.',
+      tells:[{sin:'wi',line:'같은 말을 세 번 하는데 세 번 다 순서가 똑같다. 외운 말이다.'},
+             {sin:'ae',line:'그 젊은 것이 상을 차리며 수저를 두 벌 놓았다. 하나는 제 것이다.'}] },
+    { k:'짐을 본다', base:'죽은 이의 짐이 내려와 있다. 화약, 마른 고기, 부싯돌.',
+      tells:[{sin:'tam',line:'마른 고기가 반이나 남았다. 굶어 죽은 것이 아니다.'},
+             {sin:'geop',line:'부싯돌이 젖어 있지 않다. 불을 피울 수 있었는데 피우지 않았다. 연기를 보일 수 없는 이유가 있었다.'}] },
+    { k:'마을 늙은이에게 묻는다', base:'늙은이가 담뱃대를 물고 옛말을 한다. 이십 년 전 이야기부터 시작한다.',
+      tells:[{sin:'geop',line:'이십 년 전에도 그 산에서 하나가 죽었다. 그때 살아 내려온 것이 이번에 죽은 이 사람이다.'},
+             {sin:'ae',line:'늙은이가 죽은 이의 이름을 부르지 않고 “그 사람”이라고만 한다. 마을이 오래 그렇게 불렀다.'}] },
+  ],
+  full:{geop:2, wi:1},
+  rest:'눈이 그 자리에만 잠깐 멎었다. 젊은 사냥꾼이 처음으로 숨을 길게 뱉었다.',
+  unrest:'그 산에서는 그 뒤로도 사람이 없어졌다. 늘 둘이 올라가 하나가 내려왔다.' },
+
+{ id:'seonsaeng', place:'움막 — 눈이 다 녹기 전', who:'늙은 식죄자', last:true,
+  intro:[
+    [null,'움막에서 사람이 왔다. 나를 부르는 것이 아니라, 나에게 알리러 온 것이었다.'],
+    [null,'나에게 이 일을 가르친 사람이 죽었다. 그이도 식죄자였다. 마흔 해를 먹었다.'],
+    [null,'상을 차려 줄 사람이 없어서, 내가 차렸다. 밥 한 그릇, 소금, 물.'],
+    ['sp','식죄자의 상은 식죄자가 받는다. 그래서 이 일은 끊기지 않는다.'],
+  ],
+  dominant:null,   // 모든 죄가 들어 있다. 고를 수는 있으나 정답은 없다.
+  look:[
+    { k:'시신을 본다', base:'마른 몸이다. 마흔 해를 먹었는데 마르다.',
+      tells:[{sin:'no',line:'주먹이 쥐어진 채 굳었다. 펴지지 않는다.'},
+             {sin:'tam',line:'손에 아무것도 없다. 평생 아무것도 남기지 않았다. 그것도 한 방식이다.'},
+             {sin:'ae',line:'눈이 감기지 않았다. 감겨 주는 사람이 없었다.'},
+             {sin:'wi',line:'이 사람의 이름을 나는 모른다. 마흔 해를 배웠는데 이름을 물은 적이 없다.'},
+             {sin:'geop',line:'문 쪽으로 머리를 두고 누웠다. 마지막까지 누가 올까 보았다.'}] },
+    { k:'움막을 본다', base:'세간이 없다. 그릇 하나, 수저 하나, 삿자리 한 장.',
+      tells:[{sin:'tam',line:'그릇이 하나다. 손님을 받은 적이 없다는 뜻이다.'},
+             {sin:'ae',line:'삿자리가 두 장 깔릴 넓이인데 한 장만 깔았다. 나머지 자리는 비워 두었다.'}] },
+    { k:'벽의 금을 센다', base:'벽에 칼로 그은 금이 있다. 여러 줄, 여러 무더기.',
+      tells:[{sin:'wi',line:'금이 백 개가 넘는다. 이 사람이 받은 상의 수다. 나는 다섯이다.'},
+             {sin:'geop',line:'마지막 무더기는 세다 말았다. 어느 해부터 세지 않기로 했다.'}] },
+    { k:'내 손을 본다', base:'상 앞에 앉기 전에 손을 본다. 언제부터 이랬는지 모르겠다.',
+      tells:[{sin:'no',line:'손등에 힘줄이 서 있다. 아무도 안 쳤는데 칠 준비가 되어 있다.'},
+             {sin:'tam',line:'남의 집에 들어가면 값나가는 것부터 눈에 든다. 언제부터인지 모르겠다.'},
+             {sin:'ae',line:'요즘은 남의 집 상을 받고 나면 한참을 못 일어난다.'},
+             {sin:'wi',line:'마을 사람들에게 하는 말이 정해져 있다. 생각하지 않고도 나온다.'},
+             {sin:'geop',line:'방에 들어가면 문이 몇 걸음인지부터 센다. 세지 않으려 해도 세어진다.'}] },
+  ],
+  full:{no:1, tam:1, ae:1, wi:1, geop:1},
+  rest:'그이의 눈이 감겼다. 내가 감긴 것이 아니었다.',
+  unrest:'그이는 눈을 뜬 채로 남았다. 나는 그 눈을 등지고 나왔다.' },
+];
+
+/* ══════════ 렌더 엔진 ══════════ */
+function paint(){
+  if(S.over || !S.begun){ HUD.hidden = true; return; }
+  HUD.hidden = false;
+  const k = karma();
+  let chips = '';
+  for(const id of SID){
+    const n = lv(id);
+    const cls = loud(id) ? 's loud' : (sees(id) ? 's on' : 's');
+    chips += `<span class="${cls}">${SIN[id].name} ${n}</span>`;
+  }
+  HUD.innerHTML =
+    `<span>상 <b>${Math.min(S.at+1, CASES.length)}</b>/${CASES.length}</span>`+
+    `<span class="${k>=KARMA_MAX-3?'warn':''}">업 <b>${k}</b>/${KARMA_MAX}</span>`+
+    `<span class="karma">${chips}</span>`;
+}
+function show(nodes, choices){
+  paint();
+  MAIN.innerHTML=''; ACTS.innerHTML='';
+  for(const [cls,html] of nodes){
+    if(!html) continue;
+    const d=document.createElement('div');
+    if(cls) d.className=cls;
+    d.innerHTML=html;
+    MAIN.appendChild(d);
+  }
+  for(const c of (choices||[])){
+    const b=document.createElement('button');
+    b.className='act'+(c.cls?' '+c.cls:'');
+    b.innerHTML=`<span class="k">${c.k}</span>`+(c.t?`<span class="t">${c.t}</span>`:'');
+    if(c.off) b.disabled = true;
+    else b.onclick=()=>{ try{ c.f(); }catch(e){ crash(e); } };
+    ACTS.appendChild(b);
+  }
+  try{ scrollTo(0,0); }catch(e){}
+  try{ MAIN.focus(); }catch(e){}
+}
+function crash(e){
+  S.over = true;
+  show([['hd','끊김'],[null,'무언가 어긋났다. 처음부터 다시 가야 한다.'],['note',(e&&e.message)||String(e)]],
+    [{k:'처음으로',t:'',f:boot}]);
+}
+
+/* 죄가 3 이상이면 장면에 끼어든다. 가장 높은 것 하나만. */
+function voiceLine(){
+  const loudest = SID.filter(loud).sort((a,b)=>lv(b)-lv(a))[0];
+  return loudest ? ['voice', `[${SIN[loudest].name}] ${SIN[loudest].voice}`] : null;
+}
+
+/* ══════════ 표지 ══════════ */
+function boot(){
+  S = INIT(); paint(); HUD.hidden = true;
+  const c = [{k:'첫 상을 받으러 간다',t:'',f:intro}];
+  if(seen().size>0 || DEV) c.push({k:'이 일이 무엇인지 안다',t:'설명을 건너뛴다.',f:()=>{ S.begun=true; S.at=0; caseIntro(); }});
+  show([
+    ['hd big','식죄자 食罪者'],
+    [null,'사람이 나쁘게 죽으면 시신 앞에 상을 차리고 나를 부른다. 그 상을 먹으면 죽은 이의 죄가 나에게 옮는다.'],
+    [null,'죽은 이는 가벼워지고 나는 무거워진다. 마을은 나를 부르지만 나와 겸상하지 않는다.'],
+    ['sp','죄를 지지 않은 자는 죄를 알아보지 못한다. 그것이 이 일의 값이다.'],
+  ], c);
+  renderCodex();
+}
+function intro(){
+  S.begun = true;
+  show([
+    ['hd','배운 것'],
+    [null,'상 앞에 앉기 전에 방을 본다. 무엇이 이 사람에게 가장 무거웠는지 알아야 한다.'],
+    [null,'다 먹으면 죽은 이는 편해지고 나는 그만큼 무거워진다. 골라 먹으면 덜 무겁지만, 잘못 고르면 그 사람은 못 간다.'],
+    ['note','업이 '+KARMA_MAX+'에 닿으면 나는 사람으로 남지 못한다.'],
+    ['sp','스승은 이렇게 가르쳤다. "무엇이 보이느냐고 묻지 마라. 네가 무엇을 졌느냐에 달렸다."'],
+  ],[{k:'첫 마을로',t:'',f:()=>{ S.at=0; caseIntro(); }}]);
+}
+
+/* ══════════ 상 — 도착 ══════════ */
+function caseIntro(){
+  const c = CASES[S.at];
+  S.looked = [];
+  const n = [['hd', c.place], ...c.intro];
+  const v = voiceLine(); if(v) n.push(v);
+  show(n, [{k:'방을 살핀다', t:'두 군데만 볼 수 있다.', f:lookPhase}]);
+}
+
+/* ══════════ 상 — 살핀다 (주의는 둘뿐) ══════════ */
+const LOOKS = 2;
+function reveal(item){
+  const out = [[null, item.base]];
+  for(const t of (item.tells||[]))
+    if(lv(t.sin) >= (t.lv||SEE_AT)) out.push(['see', `[${SIN[t.sin].name}] ${t.line}`]);
+  return out;
+}
+function lookPhase(shown){
+  const c = CASES[S.at];
+  const left = LOOKS - S.looked.length;
+  const n = [['hd', c.place]];
+  if(shown) n.push(...shown);
+  else n.push([null,'무엇을 볼지 고른다. 오래 머물수록 마을이 나를 본다.']);
+  if(left>0) n.push(['note', `볼 수 있는 것이 ${left}군데 남았다.`]);
+
+  const ch = [];
+  if(left>0){
+    c.look.forEach((item,i)=>{
+      if(S.looked.includes(i)) return;
+      ch.push({k:item.k, t:'', f:()=>{ S.looked.push(i); lookPhase(reveal(item)); }});
+    });
+  }
+  ch.push({k:'상 앞에 앉는다', t: left>0?'더 보지 않고 시작한다.':'', cls:'gift', f:mealPhase});
+  show(n, ch);
+}
+
+/* ══════════ 상 — 받는다 ══════════ */
+function mealPhase(){
+  const c = CASES[S.at];
+  const n = [['hd','상'],
+    [null,'상 앞에 앉는다. 밥 한 그릇, 소금, 물. 사람들이 마당으로 물러난다.'],
+    [null,'무엇을 먹을지는 내가 정한다.']];
+  const v = voiceLine(); if(v) n.push(v);
+
+  const ch = [];
+  const fullTotal = Object.values(c.full).reduce((a,b)=>a+b,0);
+  ch.push({k:'다 먹는다', t:`이 사람은 편히 간다. 업이 ${fullTotal} 오른다.`, f:()=>{
+    for(const k in c.full) eat(k, c.full[k]);
+    S.rested.push(c.id);
+    result(true, '상을 비웠다. 그릇 바닥이 보일 때까지.');
+  }});
+
+  // 골라 먹기 — 죄마다 한 줄. 지금 내가 아는 것으로 고른다.
+  for(const id of SID){
+    ch.push({k:`${SIN[id].full}만 먹는다`, t:`이것이 가장 무거웠다면 이 사람은 간다. 아니면 못 간다.`, f:()=>{
+      const right = c.dominant ? (id === c.dominant) : true;   // 마지막 상엔 정답이 없다
+      if(right){
+        eat(id, 2); S.rested.push(c.id);
+        result(true, `${SIN[id].full}만 골라 먹었다. 남은 것은 그대로 두고 일어섰다.`);
+      } else {
+        eat(id, 1); S.wandering.push(c.id);
+        result(false, `${SIN[id].full}을 먹었다. 그런데 상이 줄지 않았다. 이 사람에게 무거웠던 것은 그것이 아니었다.`);
+      }
+    }});
+  }
+
+  ch.push({k:'물린다', t:'아무것도 먹지 않는다. 이 사람은 못 간다.', cls:'warn', f:()=>{
+    S.wandering.push(c.id); S.flags.add('refused');
+    result(false, '수저를 들지 않고 일어섰다. 마당의 사람들이 길을 비켜 주지 않았다.');
+  }});
+
+  show(n, ch);
+}
+
+function result(rested, line){
+  const c = CASES[S.at];
+  const n = [['hd', rested?'보냄':'남음'], [null, line],
+    [null, rested ? c.rest : c.unrest]];
+  const k = karma();
+  if(k >= KARMA_MAX) { S.at++; return show([...n, ['sp','일어서는데 다리가 남의 것 같았다.']], [{k:'…',t:'',f:()=>end('sik')}]); }
+  if(k >= KARMA_MAX-3) n.push(['note','걸음이 무겁다. 오래는 못 한다.']);
+  n.push(['sp', rested ? '마을을 나설 때 아무도 인사하지 않았다. 그것이 인사였다.'
+                       : '마을을 나설 때 등 뒤에서 문이 닫혔다. 여러 개가 한꺼번에.']);
+  S.at++;
+  const done = S.at >= CASES.length;
+  show(n, [{k: done?'그리고 겨울이 끝났다':'다음 마을로', t:'', f: done?finish:caseIntro}]);
+}
+
+/* ══════════ 끝 ══════════ */
+function finish(){
+  const top = SID.slice().sort((a,b)=>lv(b)-lv(a))[0];
+  if(lv(top) >= 6) return end('name', top);
+  if(S.rested.length === CASES.length) return end('scale');
+  if(S.rested.length <= 2) return end('clean');
+  return end('half');
+}
+const ENDINGS = {
+  sik:  {key:'sik',   title:'침식 蝕',   grade:'사람이 아니게 됨'},
+  name: {key:'name',  title:'이름을 잃다', grade:'하나가 다 먹음'},
+  scale:{key:'scale', title:'저울',      grade:'가장 좋음'},
+  clean:{key:'clean', title:'깨끗한 손', grade:'값을 안 치름'},
+  half: {key:'half',  title:'반쪽',      grade:'절반'},
+};
+function tally(){
+  const r = S.rested.length, w = S.wandering.length;
+  return ['note', `보낸 사람 ${r} · 남은 사람 ${w} · 업 ${karma()}`];
+}
+function end(key, arg){
+  S.over = true; markSeen(key);
+  let n;
+  switch(key){
+    case 'sik':
+      n=[['hd','침식 蝕'],
+        [null,'다음 마을에서 나는 방을 살피지 않았다. 살필 것이 없었다. 들어서면 그냥 알았다.'],
+        [null,'상을 받고 일어서는데 사람들이 물러서는 것이 보이지 않았다. 보였는데 아무렇지 않았다.'],
+        [null,'그해 겨울 이후로 나를 부르는 마을이 늘었다. 나는 잘했다. 아주 잘했다.'],
+        ['sp','내가 마지막으로 남의 상을 받았는지, 내가 상이 되었는지는 이제 모르겠다.']];
+      break;
+    case 'name':{
+      const s = SIN[arg];
+      n=[['hd','이름을 잃다'],
+        [null,`${s.full} — 이것이 나머지를 다 먹었다. 방에 들어서면 그것부터 보인다. 그것만 보인다.`],
+        ['voice',`[${s.name}] ${s.voice}`],
+        [null,'사람들은 아직 나를 식죄자라고 부른다. 나는 그 말이 내 이름인 줄 알고 대답한다.'],
+        ['sp','스승이 왜 제 이름을 말해 주지 않았는지 이제 안다. 말할 것이 없었던 것이다.']];
+      break; }
+    case 'scale':
+      n=[['hd','저울'],
+        [null,'여섯 사람을 다 보냈다. 여섯 몫을 다 지지는 않았다. 무엇을 지고 무엇을 두고 올지 매번 골랐다.'],
+        [null,'그것을 잘한다고 하지는 않겠다. 다만 봄에 나는 아직 사람이었다.'],
+        [null,'움막을 물려받았다. 벽에 금을 그었다. 여섯 개.'],
+        ['sp','스승의 마지막 무더기가 왜 세다 말았는지, 나는 아직 모른다. 알게 되는 날이 오면 그날 세는 것을 그만두겠다.']];
+      break;
+    case 'clean':
+      n=[['hd','깨끗한 손'],
+        [null,'수저를 들지 않은 상이 많았다. 내 손은 봄까지 가벼웠다.'],
+        [null,'대신 그 겨울의 마을들에서 문이 안에서 잠기고, 우물이 도로 내려앉고, 밤에 쇠 치는 소리가 났다.'],
+        [null,'나를 부르는 마을이 없어졌다. 부를 이유가 없어졌다.'],
+        ['sp','나는 아무 죄도 짓지 않았다. 그것 말고는 아무것도 하지 않았다.']];
+      break;
+    case 'half':
+      n=[['hd','반쪽'],
+        [null,'보낸 사람이 있고 못 보낸 사람이 있다. 어느 쪽도 내가 골라서 그렇게 된 것은 아니었다.'],
+        [null,'보이지 않는 것을 못 읽었고, 읽은 것은 무거워서 다 지지 못했다.'],
+        ['sp','스승이 백 개를 긋는 동안 몇 번이나 틀렸을지 생각한다. 물어볼 사람은 이제 없다.']];
+      break;
+  }
+  n.push(tally());
+  n.push(...echoes());
+  show([['note', `— ${ENDINGS[key].title} · ${ENDINGS[key].grade} —`], ...n],
+    [{k:'기록을 본다',t:'',f:()=>record(key)}]);
+}
+/* 지고 온 죄가 결말에 한 줄씩 남는다. 설정만 하고 안 읽는 상태를 두지 않는다. */
+function echoes(){
+  const out=[];
+  for(const id of SID){
+    if(lv(id) >= 4) out.push(['see', `[${SIN[id].name}] ${SIN[id].eye} — 이제 그것 말고는 잘 보이지 않는다.`]);
+  }
+  if(has('refused')) out.push([null,'수저를 들지 않고 일어선 상이 있다. 그 밥이 아직 거기 있을 것이다.']);
+  return out;
+}
+function record(key){
+  const codex = seen(), total = Object.keys(ENDINGS).length;
+  const list = Object.values(ENDINGS).map(e=>
+    codex.has(e.key)?`<b>${e.title}</b>`:`<span class="lock">???</span>`).join(' · ');
+  const carried = SID.filter(id=>lv(id)>0).map(id=>`${SIN[id].full} ${lv(id)}`).join(' · ') || '없음';
+  show([
+    ['hd','기록'],
+    [null,`지고 온 것 — ${carried}`],
+    ['note',`결말 ${codex.size}/${total} : ${list}`],
+    codex.size>=total
+      ? ['sp','여섯 상을 여러 길로 받아 보았다. 어느 길에도 값을 안 치르는 길은 없었다.']
+      : ['note','무엇을 먼저 지느냐에 따라 다음 방에서 보이는 것이 달라진다.'],
+  ],[{k:'다시 겨울로',t:'',f:boot}]);
+}
+
+/* ══════════ 도감 (localStorage — 유일한 저장) ══════════ */
+const CKEY='sikjoeja.endings.v1';
+let CANSAVE=true;
+function seen(){
+  try{ return new Set(JSON.parse(localStorage.getItem(CKEY)||'[]')); }
+  catch(e){ CANSAVE=false; return new Set(); }
+}
+function markSeen(k){
+  if(DEV) return;
+  try{ const s=seen(); s.add(k); localStorage.setItem(CKEY, JSON.stringify([...s])); }
+  catch(e){ CANSAVE=false; }
+}
+function renderCodex(){
+  const codex = DEV ? new Set(Object.keys(ENDINGS)) : seen();
+  if(codex.size===0 && !DEV) return;
+  const total=Object.keys(ENDINGS).length;
+  const list = Object.values(ENDINGS).map(e=>
+    codex.has(e.key)?`<b>${e.title}</b>`:`<span class="lock">???</span>`).join(' · ');
+  const d=document.createElement('div');
+  d.className='codex';
+  d.innerHTML=`결말 ${codex.size}/${total}<br>${list}`+
+    (CANSAVE?'':'<br><span class="lock">※ 이 브라우저는 저장을 막고 있어 기록이 누적되지 않는다.</span>');
+  MAIN.appendChild(d);
+}
+
+boot();
+</script>
+</body>
+</html>
